@@ -8,8 +8,7 @@ def users():
     return jsonify(
         {
             "users":[
-                'phat',
-                'duyen'
+                'phat'
             ]
         }
     )
