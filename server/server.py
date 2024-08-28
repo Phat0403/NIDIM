@@ -1,5 +1,8 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+import query
+
+
 app = Flask(__name__)
 CORS(app)
 
@@ -7,12 +10,10 @@ CORS(app)
 
 def users():
     textQuery = request.args.get('textQuery')
-    print(textQuery)
+    resultTextQuery = query.textQuery(textQuery)
     return jsonify(
         {
-            "users":[
-                textQuery
-            ]
+            "users": resultTextQuery
         }
     )
 if  __name__ == "__main__":

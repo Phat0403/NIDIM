@@ -1,14 +1,16 @@
 import "./index.css";
+import { useState } from "react";
 import HeaderPage from "./components/layouts/header";
 import SliderPage from "./components/layouts/slider";
 import ContentPage from "./components/layouts/content";
 function App() {
+  const [result, setResult] = useState([])
   return (
     <div >
       <HeaderPage />
       <div className="fixed flex flex-row bg-white h-screen w-full">
-        <SliderPage />
-        <ContentPage />
+        <SliderPage  result={result} setResult={setResult}/>
+        <ContentPage result={result}/>
       </div>
     </div>
   );
