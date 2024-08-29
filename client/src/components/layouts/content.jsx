@@ -1,16 +1,21 @@
 import { useState } from "react";
 import { Image } from "antd";
-const ContentPage = (props) => {
-  const { result } = props;
+import logo from "../../assets/spinning-dots.svg";
 
-  // const url_images1 = Array.from({ length: 200 }, (_, i) => 'https://storage.cloud.google.com/nidim/keyframe/L01/L01_V001/'+(i + 1).toString().padStart(3, '0')+ ".jpg");
-  // const url_images2 = Array.from({ length: 200 }, (_, i) => 'https://storage.cloud.google.com/nidim/keyframe/L01/L01_V001/'+(i + 1).toString().padStart(3, '0')+ ".jpg");
-  // const url_images3 = Array.from({ length: 200 }, (_, i) => 'https://storage.cloud.google.com/nidim/keyframe/L01/L01_V001/'+(i + 1).toString().padStart(3, '0')+ ".jpg");
-  // const url_images4 = Array.from({ length: 200 }, (_, i) => 'https://storage.cloud.google.com/nidim/keyframe/L01/L01_V001/'+(i + 1).toString().padStart(3, '0')+ ".jpg");
-  // const url_images5 = Array.from({ length: 200 }, (_, i) => 'https://storage.cloud.google.com/nidim/keyframe/L01/L01_V001/'+(i + 1).toString().padStart(3, '0')+ ".jpg");
+const ContentPage = (props) => {
+  const { result, loading } = props;
   return (
-    <div className="w-2/3 overflow-y-auto">
-      <div className="grid grid-cols-5">
+    <div className="flex w-2/3 overflow-y-auto">
+      {loading === true
+      ?
+      (
+        <div className="flex  ">
+          <img className="scale-[0.2] ml-40 mb-20" src={logo} alt="" />
+        </div>
+      )
+      :
+      (
+        <div className="grid grid-cols-5">
         {result.map((item) => {
           const id_video = item.video;
           const id_frame = item.id;
@@ -22,6 +27,8 @@ const ContentPage = (props) => {
           return <Image width={200} src={url} />;
         })}
       </div>
+      )
+      }
     </div>
   );
 };

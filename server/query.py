@@ -20,7 +20,7 @@ def decode_id(id):
 def textQuery(text):
     result = []
     text_emb = model.encode([text])
-    search_result = client_qdrant.search(collection_name=collection_name, query_vector=text_emb.tolist()[0], limit=100)
+    search_result = client_qdrant.search(collection_name=collection_name, query_vector=text_emb.tolist()[0], limit=500)
     for hit in search_result:
         video_frame, id_frame = decode_id(hit.id)
         data = {
