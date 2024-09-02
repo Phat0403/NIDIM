@@ -17,32 +17,29 @@ const ImageQuery = (props) => {
       reader.readAsDataURL(file);
     }
   };
+
   const sleep = (ms) => {
     return new Promise((resolve) => setTimeout(resolve, ms));
   };
+
   const getData = async () => {
     setLoading(true);
     try {
       const formData = new FormData();
       formData.append("image", image);
-      const postImage = await axios.post(
-        "http://localhost:8080/api/query/image",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-      const response = await axios.get(
-        "http://localhost:8080/api/query/image",
-        {
-          params: {
-            type: "text",
-            status: "active",
-          },
-        }
-      );
+      await axios.post("http://localhost:8080/api/query/image", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      const response = await axios.get("http://localhost:8080/api/query/image", {
+        params: {
+          type: "text",
+          status: "active",
+        },
+      });
+
       setResult(response.data.data);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -50,31 +47,44 @@ const ImageQuery = (props) => {
   };
 
   const handleClickBtn = async () => {
-    await Promise.all([
-      getData(), // Hàm async cần chạy
-      sleep(1000), // Hàm sleep chạy song song
-    ]);
+    await Promise.all([getData(), sleep(1000)]);
     setLoading(false);
   };
+
   return (
-    <div className="flex-row h-40 mt-10 items-center justify-center bg-gray-100 ">
-      <div className="border ">
-      {preview && (
-        <img
-          src={preview}
-          alt="Uploaded"
-          className="w-40 h-40 object-cover border-2 border-gray-300 shadow-lg rounded-lg"
-        />
-      )}
-      {!preview && <p className="text-gray-500 border">No image uploaded</p>}
+    <div className="w-80 flex flex-col items-center justify-center bg-gray-50 p-4 rounded-lg shadow-lg mt-2 ">
+      <div className="mb-2 w-full">
+        {preview ? (
+          <img
+            src={preview}
+            alt="Uploaded"
+            className=" object-cover border-2 border-gray-300 shadow-lg rounded-lg"
+          />
+        ) : (
+          <div
+            className="h-40 flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg"
+          >
+            <p className="text-gray-500">No image uploaded</p>
+          </div>
+        )}
       </div>
+      <label
+        htmlFor="upload"
+        className="cursor-pointer bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg mb-2 transition-all duration-300 w-full text-center"
+      >
+        {preview ? "Change Image" : "Upload Image"}
+      </label>
       <input
+        id="upload"
         type="file"
         accept="image/*"
         onChange={handleImageUpload}
-        className=""
+        className="hidden"
       />
-      <button onClick={handleClickBtn} className="border-2">
+      <button
+        onClick={handleClickBtn}
+        className="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-2 rounded-lg transition-all duration-300 w-full"
+      >
         Search
       </button>
     </div>
