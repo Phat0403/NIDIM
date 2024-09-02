@@ -5,11 +5,11 @@ import logo from "../../assets/spinning-dots.svg";
 const ContentPage = (props) => {
   const { result, loading } = props;
   return (
-    <div className="flex w-2/3 overflow-y-auto">
+    <div className="flex border  bg-[#EDE8F5] mt-1 ml-1 rounded-lg w-2/3 overflow-y-auto">
       {loading === true
       ?
       (
-        <div className="flex  ">
+        <div className="flex">
           <img className="scale-[0.2] ml-40 mb-20" src={logo} alt="" />
         </div>
       )

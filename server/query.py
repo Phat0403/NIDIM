@@ -1,6 +1,7 @@
 import numpy as np
 from qdrant_client import QdrantClient
 from qdrant_client.models import PointStruct, VectorParams
+import os
 
 from sentence_transformers import SentenceTransformer, util
 from PIL import Image
@@ -27,4 +28,23 @@ def textQuery(text):
             'video': video_frame, 
             'id': id_frame}
         result.append(data)
+    return result
+UPLOAD_FOLDER = 'uploads/'
+def imageQuery():
+    result = []
+    img = [f for f in os.listdir(UPLOAD_FOLDER) if os.path.isfile(os.path.join(UPLOAD_FOLDER, f))][0]
+    img_path = os.path.join(UPLOAD_FOLDER, img)
+    img_emb = model.encode(Image.open(img_path))
+    search_result = client_qdrant.search(collection_name=collection_name, query_vector=img_emb.tolist(), limit=500)
+    for hit in search_result:
+        video_frame, id_frame = decode_id(hit.id)
+        data = {
+            'video': video_frame, 
+            'id': id_frame}
+        result.append(data)
+    if os.path.exists(img_path):
+        os.remove(img_path)
+        print("File deleted successfully")
+    else:
+        print("File does not exist")
     return result

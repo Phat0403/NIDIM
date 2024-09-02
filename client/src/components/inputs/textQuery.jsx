@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Button } from "antd/es/radio";
 import { CiSearch } from "react-icons/ci";
 import axios from "axios"
 const TextQuery = (props)=>{
@@ -8,21 +7,21 @@ const TextQuery = (props)=>{
     const sleep = (ms) => {
         return new Promise(resolve => setTimeout(resolve, ms));
       };
-      const getData = async ()=>{
+    const getData = async ()=>{
         setLoading(true);
         try {
-            const response = await axios.get('http://localhost:8080/api/users', {
+            const response = await axios.get('http://localhost:8080/api/query/text', {
                 params: {
-                    textQuery: valueQuery,
+                    query: valueQuery,
                     status: 'active'
             }
         });
-        setResult(response.data.users)
+        setResult(response.data.data)
       }
       catch (error) {
         console.error('Error fetching data:', error);
        } 
-    }
+    }  
     const handleClickBtn = async ()=>{
         await Promise.all([
             getData(), // Hàm async cần chạy

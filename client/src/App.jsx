@@ -9,7 +9,7 @@ function App() {
   return (
     <div >
       <HeaderPage />
-      <div className="fixed flex flex-row bg-white h-screen w-full">
+      <div className="fixed flex flex-row bg-[#f0d8e8] h-screen w-full">
         <SliderPage  setResult={setResult} setLoading={setLoading}/>
         <ContentPage result={result} loading={loading}/>
       </div>
