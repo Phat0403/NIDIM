@@ -5,13 +5,13 @@ import logo from "../../assets/spinning-dots.svg";
 const ContentPage = (props) => {
   const { result, loading } = props;
   return (
-    <div className="flex border  bg-[#EDE8F5] mt-1 ml-1 rounded-lg w-2/3 overflow-y-auto">
+    <div className="flex border  bg-[#EDE8F5] mt-1 ml-1 rounded-lg w-[calc(100%-300px)] overflow-y-auto justify-center">
       {loading === true ? (
         <div className="flex">
           <img className="scale-[0.2] ml-40 mb-20" src={logo} alt="" />
         </div>
       ) : (
-        <div className="grid grid-cols-5">
+        <div className="grid grid-cols-5 gap-4">
           {result.map((item) => {
             const id_video = item.video;
             const id_frame = item.id;
