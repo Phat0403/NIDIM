@@ -2,6 +2,8 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import query
 import os
+import xl
+
 
 
 app = Flask(__name__)
@@ -47,6 +49,17 @@ def getImageQuery():
         }
     )
 
+@app.route('/getlink', methods=['POST'])
+def getLink():
+    data = request.get_json().get('data')
+    data=xl.gom_laij(data)
+    return jsonify({'data':data})
+
+
+@app.route('/getname', methods=['POST'])
+def getName():
+    data = request.get_json().get('data')
+    return jsonify({'data':xl.get_title(data)})
 
 
 

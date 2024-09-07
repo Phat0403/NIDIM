@@ -2,17 +2,58 @@ import { useState } from "react";
 import logo from "../../assets/spinning-dots.svg";
 import ImageBouns from "../overlay/imageBonus";
 
+import { Image, Space } from 'antd';
+import {
+  ExportOutlined,
+  RotateLeftOutlined,
+  RotateRightOutlined,
+  SwapOutlined,
+  UndoOutlined,
+  ZoomInOutlined,
+  ZoomOutOutlined,
+} from '@ant-design/icons';
+
 const ContentPage = (props) => {
   const { result, loading } = props;
   const [clickedImage, setClickedImage] = useState(null);
   const [video, setVideo] = useState(null);
   const [frame, setFrame] = useState(null);
 
-  const handleImageClick = (index, video, frame) => {
-    setClickedImage(index);
-    setVideo(video);
-    setFrame(frame);
+  const [names, setNames] = useState({});
+
+
+  const getName = async (url, id_frame) => {
+    try {
+      const response = await fetch('http://127.0.0.1:8080/getname', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ data: url }),
+      });
+      const data = await response.json();
+      setNames((prevNames) => ({
+        ...prevNames,
+        [id_frame]: data['data'], // Lưu tên theo id_frame
+      }));
+    } catch (error) {
+      console.error('Error fetching name:', error);
+    }
   };
+
+  const OpenURL = (url) => {
+    fetch('http://127.0.0.1:8080/getlink', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ data: url})  
+    })
+    .then(response => response.json())
+    .then(data => {
+          window.open(data['data'], '_blank');
+    });
+}// 
   const closeOverlay = () => {
     setClickedImage(null);
   };
@@ -33,24 +74,40 @@ const ContentPage = (props) => {
                 `https://storage.cloud.google.com/nidim/keyframe/${folder_video}/${id_video}/` +
                 id_frame.toString().padStart(3, "0") +
                 ".jpg";
-              return (
-                <div>
-                  <img
-                    key={index}
-                    src={url}
-                    alt=""
-                    className="cursor-pointer w-[200px] h-[112.5px] object-cover"
-                    onClick={() => handleImageClick(index, id_video, id_frame)}
-                  />
-                </div>
-              );
+                if (!names[id_frame]) {
+              getName(url, id_frame);
+            }
+            const name = names[id_frame] || "Loading...";
+            return  <figure>
+              <Image width={200} src={url} 
+            preview={{
+              toolbarRender: (
+                _,
+                {
+                  image: { url },
+                  transform: { scale },
+                  actions: { onFlipY, onFlipX, onRotateLeft, onRotateRight, onZoomOut, onZoomIn, onReset },
+                },
+              ) => (
+                <Space size={12} className="toolbar-wrapper">
+                  <ExportOutlined onClick={()=>OpenURL(url)} />
+                  <SwapOutlined rotate={90} onClick={onFlipY} />
+                  <SwapOutlined onClick={onFlipX} />
+                  <RotateLeftOutlined onClick={onRotateLeft} />
+                  <RotateRightOutlined onClick={onRotateRight} />
+                  <ZoomOutOutlined disabled={scale === 1} onClick={onZoomOut} />
+                  <ZoomInOutlined disabled={scale === 50} onClick={onZoomIn} />
+                  <UndoOutlined onClick={onReset} />
+                </Space>
+              ),
+            }}
+            />
+            <figcaption>{name}</figcaption>
+          </figure> 
             })}
           </div>
         )}
       </div>
-      {clickedImage !== null && (
-        <ImageBouns closeOverlay={closeOverlay} video={video} frame={frame} />
-      )}
     </>
   );
 };
