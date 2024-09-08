@@ -1,4 +1,6 @@
 import numpy as np
+import json
+import pandas as pd
 from qdrant_client import QdrantClient
 from qdrant_client.models import PointStruct, VectorParams
 import os
@@ -18,6 +20,14 @@ def decode_id(id):
     l = int(((id - id_frame)/1000-v)/32)
     return [f'L{l:02}_V{v:03}', id_frame]
 
+def getData(video, id):
+    with open('./media-info-b1/media-info/' + video + '.json', 'r', encoding='utf-8') as file:
+            metadata = json.load(file)
+            url = metadata["watch_url"]
+    df = pd.read_csv('./map-keyframes-b1/map-keyframes/'+ video + '.csv')
+    n, pts_time, fps, frame_idx =df.iloc[int(id)-1]
+    return url, pts_time, fps, frame_idx
+
 def textQuery(text):
     result = []
     text=text.split(";")
@@ -27,11 +37,18 @@ def textQuery(text):
     search_result = client_qdrant.search(collection_name=collection_name, query_vector=text_emb.tolist()[0], limit=500)
     for hit in search_result:
         video_frame, id_frame = decode_id(hit.id)
+        url, pts_time, fps, frame_idx = getData(video_frame, id_frame)
         data = {
             'video': video_frame, 
-            'id': id_frame}
+            'id': id_frame,
+            'url': url,
+            'pts_time': pts_time,
+            'frame_idx': frame_idx,
+            'fps': fps}
         result.append(data)
     return result
+
+
 UPLOAD_FOLDER = 'uploads/'
 def imageQuery():
     result = []
@@ -41,9 +58,14 @@ def imageQuery():
     search_result = client_qdrant.search(collection_name=collection_name, query_vector=img_emb.tolist(), limit=500)
     for hit in search_result:
         video_frame, id_frame = decode_id(hit.id)
+        url, pts_time, fps, frame_idx = getData(video_frame, id_frame)
         data = {
             'video': video_frame, 
-            'id': id_frame}
+            'id': id_frame,
+            'url': url,
+            'pts_time': pts_time,
+            'frame_idx': frame_idx,
+            'fps': fps}
         result.append(data)
     if os.path.exists(img_path):
         os.remove(img_path)
