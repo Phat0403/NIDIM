@@ -2,12 +2,12 @@ import json
 import pandas as pd
 def get_link_from_json(file):
     file+=".json"
-    path_metadata='C:/Users/LAPTOP/Downloads/media-info-b1/media-info'
+    path_metadata='../data/metadata'
     with open(path_metadata+'/'+file, 'r', encoding='utf-8') as f:
         data = json.load(f)
     return data['watch_url']
 def get_time(dict):
-    path="C:/Users/LAPTOP/Downloads/map-keyframes-b1/map-keyframes"
+    path="../data/map-keyframes"
     file_path = path+'/'+dict['video']+'.csv'
     df = pd.read_csv(file_path)
     row=(df[df['n']==int(dict['id'])])
