@@ -1,9 +1,10 @@
 import numpy as np
+import json
+import pandas as pd
 from qdrant_client import QdrantClient
 from qdrant_client.models import PointStruct, VectorParams
 import os
 
-from pymongo import MongoClient
 from sentence_transformers import SentenceTransformer, util
 from PIL import Image
 
@@ -13,16 +14,19 @@ client_qdrant = QdrantClient(host='localhost', port=6333)
 # Tạo collection
 collection_name = 'clip-feature-3'
 
-#Ket noi toi MongoDB
-client = MongoClient('mongodb://root:123456@localhost:27018/')
-db = client.NIDIM
-collection = db.data
-
 def decode_id(id):
     id_frame = id%1000
     v = int(((id - id_frame)/1000)%32)
     l = int(((id - id_frame)/1000-v)/32)
     return [f'L{l:02}_V{v:03}', id_frame]
+
+def getData(video, id):
+    with open('./media-info-b1/media-info/' + video + '.json', 'r', encoding='utf-8') as file:
+            metadata = json.load(file)
+            url = metadata["watch_url"]
+    df = pd.read_csv('./map-keyframes-b1/map-keyframes/'+ video + '.csv')
+    n, pts_time, fps, frame_idx =df.iloc[int(id)-1]
+    return url, pts_time, fps, frame_idx
 
 def textQuery(text):
     result = []
@@ -30,13 +34,7 @@ def textQuery(text):
     search_result = client_qdrant.search(collection_name=collection_name, query_vector=text_emb.tolist()[0], limit=500)
     for hit in search_result:
         video_frame, id_frame = decode_id(hit.id)
-        document = collection.find_one({"_id": video_frame})
-        url = document['url']
-
-        frame = document['frames'][int(id_frame)-1]
-        pts_time = frame['pts_time']
-        fps = frame['fps']
-        frame_idx = frame['frame_idx']
+        url, pts_time, fps, frame_idx = getData(video_frame, id_frame)
         data = {
             'video': video_frame, 
             'id': id_frame,
@@ -57,13 +55,7 @@ def imageQuery():
     search_result = client_qdrant.search(collection_name=collection_name, query_vector=img_emb.tolist(), limit=500)
     for hit in search_result:
         video_frame, id_frame = decode_id(hit.id)
-        document = collection.find_one({"_id": video_frame})
-        url = document['url']
-
-        frame = document['frames'][int(id_frame)-1]
-        pts_time = frame['pts_time']
-        fps = frame['fps']
-        frame_idx = frame['frame_idx']
+        url, pts_time, fps, frame_idx = getData(video_frame, id_frame)
         data = {
             'video': video_frame, 
             'id': id_frame,
