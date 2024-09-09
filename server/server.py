@@ -4,7 +4,6 @@ import query
 import os
 
 
-
 app = Flask(__name__)
 CORS(app)
 
@@ -41,7 +40,8 @@ def postImageQuery():
     
 @app.route("/api/query/image", methods=['GET'])
 def getImageQuery():
-    resultQuery = query.imageQuery()
+    text=request.args.get('query')
+    resultQuery = query.imageQuery(text)
     return jsonify(
         {
             "data": resultQuery

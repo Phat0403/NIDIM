@@ -4,7 +4,7 @@ import pandas as pd
 from qdrant_client import QdrantClient
 from qdrant_client.models import PointStruct, VectorParams
 import os
-
+import rag_fusion as rf
 from sentence_transformers import SentenceTransformer, util
 from PIL import Image
 
@@ -21,23 +21,32 @@ def decode_id(id):
     return [f'L{l:02}_V{v:03}', id_frame]
 
 def getData(video, id):
-    with open('./media-info-b1/media-info/' + video + '.json', 'r', encoding='utf-8') as file:
+    with open('./data/media-info-b1/media-info/' + video + '.json', 'r', encoding='utf-8') as file:
             metadata = json.load(file)
             url = metadata["watch_url"]
-    df = pd.read_csv('./map-keyframes-b1/map-keyframes/'+ video + '.csv')
-    n, pts_time, fps, frame_idx =df.iloc[int(id)-1]
+    df = pd.read_csv('./data/map-keyframes-b1/map-keyframes/'+ video + '.csv')
+    _, pts_time, fps, frame_idx =df.iloc[int(id)-1]
     return url, pts_time, fps, frame_idx
 
 def textQuery(text):
+    rrf_input=[]
     result = []
-    text=text.split(";")
-    text_emb = model.encode(text)
-    if text_emb.shape[0] > 1:
-        pass
-    search_result = client_qdrant.search(collection_name=collection_name, query_vector=text_emb.tolist()[0], limit=500)
+    text=text.split("\n")
+    text= [a for a in text if a != " "]
+    # print(text)
+    text_embs = model.encode(text)
+    print(text_embs.shape)
+    search_result=None
+    for i in range(text_embs.shape[0]): ## rag_fusion
+        text_emb=text_embs[i]
+        # print(text_emb.tolist())
+        search_result = client_qdrant.search(collection_name=collection_name, query_vector=text_emb.tolist(), limit=100)
+        rrf_input.append([hit.id for hit in search_result])
+    search_result=rf.rrf(rrf_input)
     for hit in search_result:
-        video_frame, id_frame = decode_id(hit.id)
+        video_frame, id_frame = decode_id(hit)
         url, pts_time, fps, frame_idx = getData(video_frame, id_frame)
+        # print(video_frame,id_frame)
         data = {
             'video': video_frame, 
             'id': id_frame,
@@ -50,12 +59,22 @@ def textQuery(text):
 
 
 UPLOAD_FOLDER = 'uploads/'
-def imageQuery():
-    result = []
+def imageQuery(text):
+    text=['the background']
+    result=[]
+    print(text)
+    # return None
+    text_embed = model.encode(text)
+    print(text_embed.shape)
     img = [f for f in os.listdir(UPLOAD_FOLDER) if os.path.isfile(os.path.join(UPLOAD_FOLDER, f))][0]
     img_path = os.path.join(UPLOAD_FOLDER, img)
-    img_emb = model.encode(Image.open(img_path))
-    search_result = client_qdrant.search(collection_name=collection_name, query_vector=img_emb.tolist(), limit=500)
+    img_emb = model.encode(Image.open(img_path)).reshape(1,-1)
+    # print(img_emb.shape,123)
+    # search_result = client_qdrant.search(collection_name=collection_name, query_vector=img_emb.tolist(), limit=500)
+    
+    search_result=rf.image_text_pipeline_qdrant(np.vstack([img_emb]))
+    # search_result=rf.image_text_pipeline_qdrant([img_emb])
+    print(search_result)
     for hit in search_result:
         video_frame, id_frame = decode_id(hit.id)
         url, pts_time, fps, frame_idx = getData(video_frame, id_frame)
