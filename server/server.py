@@ -4,6 +4,7 @@ import query
 import os
 
 
+
 app = Flask(__name__)
 CORS(app)
 
@@ -46,10 +47,6 @@ def getImageQuery():
             "data": resultQuery
         }
     )
-
-
-
-
 
 
 if  __name__ == "__main__":
