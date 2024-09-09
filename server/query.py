@@ -28,7 +28,9 @@ def getData(video, id):
     n, pts_time, fps, frame_idx =df.iloc[int(id)-1]
     return url, pts_time, fps, frame_idx
 
-def textQuery(text):
+def textQuery(data):
+    print(data)
+    text = data[0]['value']
     result = []
     text_emb = model.encode([text])
     search_result = client_qdrant.search(collection_name=collection_name, query_vector=text_emb.tolist()[0], limit=500)
