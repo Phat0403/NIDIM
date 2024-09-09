@@ -14,8 +14,13 @@ if not os.path.exists(UPLOAD_FOLDER):
 
 @app.route("/api/query/text", methods=['GET'])
 def getTextQuery():
-    dataQuery = request.args.get('query')
-    resultQuery = query.textQuery(dataQuery)
+    queries = request.args.to_dict(flat=False)
+    ids = queries.get('queries[id]', [])
+    values = queries.get('queries[value]', [])
+    data = []
+    for id, value in zip(ids, values):
+        data.append({'id': id, 'value': value})
+    resultQuery = query.textQuery(data)
     return jsonify(
         {
             "data": resultQuery
@@ -40,8 +45,7 @@ def postImageQuery():
     
 @app.route("/api/query/image", methods=['GET'])
 def getImageQuery():
-    text=request.args.get('query')
-    resultQuery = query.imageQuery(text)
+    resultQuery = query.imageQuery()
     return jsonify(
         {
             "data": resultQuery
