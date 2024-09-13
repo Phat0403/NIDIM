@@ -28,14 +28,55 @@ def getData(video, id):
     n, pts_time, fps, frame_idx =df.iloc[int(id)-1]
     return url, pts_time, fps, frame_idx
 
-def textQuery(data):
-    print(data)
-    text = data[0]['value']
+def find_index(arr, value):
+    try:
+        return arr.index(value) 
+    except ValueError:
+        return 1001
+def join_arr(arr1, arr2):
+    combined = arr1 + arr2
+    unique_elements = {}
+    unique_elements = {frozenset(item.items()): item for item in combined}
+    unique_list = list(unique_elements.values())
+    query = []
     result = []
-    text_emb = model.encode([text])
-    search_result = client_qdrant.search(collection_name=collection_name, query_vector=text_emb.tolist()[0], limit=500)
-    for hit in search_result:
-        video_frame, id_frame = decode_id(hit.id)
+    for el in unique_list:
+        idx_1 = find_index(arr1, el) + 1
+        idx_2 = find_index(arr2, el) + 1
+        score = 2.0/(1.0/idx_1 + 1.0/idx_2)
+        data = {'score': score, 'value': el}
+        query.append(data)
+    sorted_data = sorted(query, key=lambda x: x['score'])
+    for el in sorted_data:
+        result.append(el['value'])
+    return result
+
+
+
+def textQuery(data):
+    n = len(data)
+    query_more = []
+    result = []
+    count = 0
+    for element in data:
+        text = element['value']
+        text_emb = model.encode([text])
+        search_result = client_qdrant.search(collection_name=collection_name, query_vector=text_emb.tolist()[0], limit=1000)
+        query = []
+        for hit in search_result:
+            video_frame, id_frame = decode_id(hit.id)
+            data = {
+             'video': video_frame, 
+             'id': id_frame-count}
+            query.append(data)
+        query_more.append(query)
+        count += 1
+    ans = query_more[0]
+    for i in range(1,count):
+        ans = join_arr(ans, query_more[i])
+    for el in ans:
+        video_frame = el['video']
+        id_frame = el['id']
         url, pts_time, fps, frame_idx = getData(video_frame, id_frame)
         data = {
             'video': video_frame, 
@@ -45,6 +86,25 @@ def textQuery(data):
             'frame_idx': frame_idx,
             'fps': fps}
         result.append(data)
+    print(len(result))
+    return result[0:1000]
+
+    print(result)
+    # text = data[0]['value']
+    # result = []
+    # text_emb = model.encode([text])
+    # search_result = client_qdrant.search(collection_name=collection_name, query_vector=text_emb.tolist()[0], limit=500)
+    # for hit in search_result:
+    #     video_frame, id_frame = decode_id(hit.id)
+    #     url, pts_time, fps, frame_idx = getData(video_frame, id_frame)
+    #     data = {
+    #         'video': video_frame, 
+    #         'id': id_frame,
+    #         'url': url,
+    #         'pts_time': pts_time,
+    #         'frame_idx': frame_idx,
+    #         'fps': fps}
+    #     result.append(data)
     return result
 
 
