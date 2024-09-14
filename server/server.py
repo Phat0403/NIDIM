@@ -20,7 +20,7 @@ def getTextQuery():
     data = []
     for id, value in zip(ids, values):
         data.append({'id': id, 'value': value})
-    resultQuery = query.textQuery(data)
+    resultQuery = query.textQuery1(data)
     return jsonify(
         {
             "data": resultQuery

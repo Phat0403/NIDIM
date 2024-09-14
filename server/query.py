@@ -44,12 +44,79 @@ def searchResult_json(search_result):
         result.append(data)
     return result
 
-def textQuery(data):
-    # print(data)
-    text = data[0]['value']
+
+def find_index(arr, value):
+    try:
+        return arr.index(value) 
+    except ValueError:
+        return 1001
+        
+def join_arr(arr1, arr2):
+    combined = arr1 + arr2
+    unique_elements = {}
+    unique_elements = {frozenset(item.items()): item for item in combined}
+    unique_list = list(unique_elements.values())
+    query = []
     result = []
+    for el in unique_list:
+        idx_1 = find_index(arr1, el) + 1
+        idx_2 = find_index(arr2, el) + 1
+        score = 2.0/(1.0/idx_1 + 1.0/idx_2)
+        data = {'score': score, 'value': el}
+        query.append(data)
+    sorted_data = sorted(query, key=lambda x: x['score'])
+    for el in sorted_data:
+        result.append(el['value'])
+    return result
+
+def preprocess_text(text):
     text=text.split("\n")
     text= [a for a in text if a != " "]
+    return text
+
+def textQuery1(data):
+    query_more = []
+    result = []
+    count = 0
+    for i,_ in enumerate(data):
+        text = preprocess_text(data[i].get('value'))
+        result = []
+        text_embs = model.encode(text)
+        search_result=rf.rrf_pipeline(text_embs)
+        query = []
+        for hit in search_result:
+            video_frame, id_frame = decode_id(hit)
+            tmp = {
+             'video': video_frame, 
+             'id': id_frame-count
+            }
+            query.append(tmp)
+        query_more.append(query)
+        count += 1
+    ans = query_more[0]
+    for i in range(1,count):
+        ans = join_arr(ans, query_more[i])
+    for el in ans:
+        video_frame = el['video']
+        id_frame = el['id']
+        url, pts_time, fps, frame_idx = getData(video_frame, id_frame)
+        # print(video_frame,id_frame)
+        data = {
+            'video': video_frame, 
+            'id': id_frame,
+            'url': url,
+            'pts_time': pts_time,
+            'frame_idx': frame_idx,
+            'fps': fps}
+        result.append(data)
+    # print(len(result))
+    return result
+
+
+def textQuery2(data,i=0):
+    # print(data)
+    text = preprocess_text(data[i]['value'])
+    result = []
     # print(text)
     text_embs = model.encode(text)
     search_result=rf.rrf_pipeline(text_embs)
@@ -78,8 +145,8 @@ def imageQuery():
     return result
 
 def image_textQuery(data):
-    print('image_textQuery')
-    result=[]
+    # print('image_textQuery')
+    result=[]   
     text = data[0]['value']
     result = []
     text=text.split("\n")
@@ -99,3 +166,13 @@ def image_textQuery(data):
     else:
         print("File does not exist")
     return result
+
+# if __name__ == '__main__':
+#     seed= np.random.default_rng(42)
+#     vec1,vec2={},{}
+#     vec1['value']="dog"
+#     vec2['value']="cat"
+#     a = []
+#     a.extend([vec1,vec2])
+#     # print(a[0]['value'].shape)
+#     print(textQuery1(a))

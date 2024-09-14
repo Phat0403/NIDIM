@@ -83,7 +83,7 @@ const ContentPage = (props) => {
                     }}
                   />
                   <figcaption>
-                    {id_video}, {frame_idx}
+                    {id_video}, {id_frame}
                   </figcaption>
                 </figure>
               );
