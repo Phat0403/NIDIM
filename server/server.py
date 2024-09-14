@@ -26,6 +26,7 @@ def getTextQuery():
             "data": resultQuery
         }
     )
+
 @app.route("/api/query/image", methods=['POST'])
 def postImageQuery():
     try:
@@ -43,14 +44,22 @@ def postImageQuery():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     
+
 @app.route("/api/query/image", methods=['GET'])
 def getImageQuery():
-    resultQuery = query.imageQuery()
+    # data=getText()
+    data=[]
+    if len(data)==0:
+        resultQuery = query.imageQuery()
+    else :
+        resultQuery= query.image_textQuery(data)
+    
     return jsonify(
         {
             "data": resultQuery
         }
     )
+
 
 
 if  __name__ == "__main__":
