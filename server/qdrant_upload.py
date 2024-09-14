@@ -1,4 +1,3 @@
-from pymongo import MongoClient
 import json
 import numpy as np
 import pandas as pd
@@ -16,13 +15,14 @@ def create_qdrant(collection_name):
         collection_name=collection_name,
         vectors_config=VectorParams(size=512, distance="Cosine") # Cung cấp cấu hình vector
     )
-create_qdrant(collection_name)
+# client_qdrant.delete_collection(collection_name=collection_name)
+# create_qdrant(collection_name)
 
 
-clip_featurePath = 'D:/newPython/video_frame/clip-features'
+# clip_featurePath = 'D:/newPython/video_frame/clip-features'
 
-file_clip_feature = os.listdir(clip_featurePath)
-n=len(file_clip_feature)
+# file_clip_feature = os.listdir(clip_featurePath)
+# n=len(file_clip_feature)
 
 
 def convert_name_file(s):
@@ -39,19 +39,22 @@ def decode_id(id):
     l = int(((id - id_frame)/1000-v)/32)
     return [f'L{l:02}_V{v:03}', id_frame]
 
-
+file_clip_feature=os.listdir('./data/clip-features')
 
 
 def upload_data(n):
     for i in range(n):
         points = []
-        clip_feature = np.load(f'./clip-features/' + file_clip_feature[i])
+        clip_feature = np.load(f'./data/clip-features/' + file_clip_feature[i])
         video = convert_name_file(file_clip_feature[i])
         sl_frame = clip_feature.shape[0]
         for j in range(sl_frame):
-            id = encode_id(video, j+1)
+            idx = encode_id(video, j+1)
             vector = clip_feature[int(j)].tolist()
-            point = PointStruct(id=int(id), vector=vector)
+            point = PointStruct(id=int(idx), vector=vector,payload={"adr":idx})
             points.append(point)
         client_qdrant.upsert(collection_name=collection_name, points=points)
-upload_data(n)
+
+# upload_data(len(file_clip_feature))
+# print(len(file_clip_feature))
+

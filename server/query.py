@@ -4,7 +4,7 @@ import pandas as pd
 from qdrant_client import QdrantClient
 from qdrant_client.models import PointStruct, VectorParams
 import os
-
+import rag_fusion as rf
 from sentence_transformers import SentenceTransformer, util
 from PIL import Image
 import requests
@@ -27,14 +27,32 @@ def getData(video, id):
             metadata = json.load(file)
             url = metadata["watch_url"]
     df = pd.read_csv('./map-keyframes-b1/map-keyframes/'+ video + '.csv')
-    n, pts_time, fps, frame_idx =df.iloc[int(id)-1]
+    _, pts_time, fps, frame_idx =df.iloc[int(id)-1]
     return url, pts_time, fps, frame_idx
+
+def searchResult_json(search_result):
+    result=[]
+    for hit in search_result:
+        video_frame, id_frame = decode_id(hit)
+        url, pts_time, fps, frame_idx = getData(video_frame, id_frame)
+        # print(video_frame,id_frame)
+        data = {
+            'video': video_frame, 
+            'id': id_frame,
+            'url': url,
+            'pts_time': pts_time,
+            'frame_idx': frame_idx,
+            'fps': fps}
+        result.append(data)
+    return result
+
 
 def find_index(arr, value):
     try:
         return arr.index(value) 
     except ValueError:
         return 1001
+        
 def join_arr(arr1, arr2):
     combined = arr1 + arr2
     unique_elements = {}
@@ -53,24 +71,28 @@ def join_arr(arr1, arr2):
         result.append(el['value'])
     return result
 
+def preprocess_text(text):
+    text=text.split("\n")
+    text= [a for a in text if a != " "]
+    return text
 
-
-def textQuery(data):
-    n = len(data)
+def textQuery1(data):
     query_more = []
     result = []
     count = 0
-    for element in data:
-        text = element['value']
-        text_emb = model.encode([text])
-        search_result = client_qdrant.search(collection_name=collection_name, query_vector=text_emb.tolist()[0], limit=1000)
+    for i,_ in enumerate(data):
+        text = preprocess_text(data[i].get('value'))
+        result = []
+        text_embs = model.encode(text)
+        search_result=rf.rrf_pipeline(text_embs)
         query = []
         for hit in search_result:
-            video_frame, id_frame = decode_id(hit.id)
-            data = {
+            video_frame, id_frame = decode_id(hit)
+            tmp = {
              'video': video_frame, 
-             'id': id_frame-count}
-            query.append(data)
+             'id': id_frame-count
+            }
+            query.append(tmp)
         query_more.append(query)
         count += 1
     ans = query_more[0]
@@ -82,6 +104,7 @@ def textQuery(data):
         video_frame = el['video']
         id_frame = el['id']
         url, pts_time, fps, frame_idx = getData(video_frame, id_frame)
+        # print(video_frame,id_frame)
         data = {
             'video': video_frame, 
             'id': id_frame,
@@ -104,24 +127,30 @@ def textQuery(data):
 
 
 
+def textQuery2(data,i=0):
+    # print(data)
+    text = preprocess_text(data[i]['value'])
+    result = []
+    # print(text)
+    text_embs = model.encode(text)
+    search_result=rf.rrf_pipeline(text_embs)
+    result= searchResult_json(search_result)
+    return result
+
+
 UPLOAD_FOLDER = 'uploads/'
 def imageQuery():
-    result = []
+    # print('imageQuery')
+    result=[]
     img = [f for f in os.listdir(UPLOAD_FOLDER) if os.path.isfile(os.path.join(UPLOAD_FOLDER, f))][0]
     img_path = os.path.join(UPLOAD_FOLDER, img)
     img_emb = model.encode(Image.open(img_path))
-    search_result = client_qdrant.search(collection_name=collection_name, query_vector=img_emb.tolist(), limit=500)
-    for hit in search_result:
-        video_frame, id_frame = decode_id(hit.id)
-        url, pts_time, fps, frame_idx = getData(video_frame, id_frame)
-        data = {
-            'video': video_frame, 
-            'id': id_frame,
-            'url': url,
-            'pts_time': pts_time,
-            'frame_idx': frame_idx,
-            'fps': fps}
-        result.append(data)
+    search_result = client_qdrant.search(
+        collection_name=collection_name,
+        query_vector=img_emb.tolist(), 
+        limit=500)
+    search_result =[hit.id for hit in search_result]
+    result= searchResult_json(search_result)
     if os.path.exists(img_path):
         os.remove(img_path)
         print("File deleted successfully")
@@ -142,3 +171,35 @@ def similarQuery(url_img):
             }
         result.append(data)
     return result
+def image_textQuery(data):
+    # print('image_textQuery')
+    result=[]   
+    text = data[0]['value']
+    result = []
+    text=text.split("\n")
+    text= [a for a in text if a != " "]
+    text_embs = model.encode(text)
+    img = [f for f in os.listdir(UPLOAD_FOLDER) if os.path.isfile(os.path.join(UPLOAD_FOLDER, f))][0]
+    img_path = os.path.join(UPLOAD_FOLDER, img)
+    img_emb = model.encode(Image.open(img_path)).reshape(1,-1)
+    # print(img_emb.shape,123)
+    # search_result = client_qdrant.search(collection_name=collection_name, query_vector=img_emb.tolist(), limit=500)
+    
+    search_result=rf.image_text_pipeline(img_emb,text_embs)
+    result= searchResult_json(search_result)
+    if os.path.exists(img_path):
+        os.remove(img_path)
+        print("File deleted successfully")
+    else:
+        print("File does not exist")
+    return result
+
+# if __name__ == '__main__':
+#     seed= np.random.default_rng(42)
+#     vec1,vec2={},{}
+#     vec1['value']="dog"
+#     vec2['value']="cat"
+#     a = []
+#     a.extend([vec1,vec2])
+#     # print(a[0]['value'].shape)
+#     print(textQuery1(a))
