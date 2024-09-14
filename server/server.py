@@ -54,5 +54,18 @@ def getImageQuery():
     )
 
 
+@app.route("/api/query/similar", methods=['GET'])
+def getSimilarQuery():
+    url_img = request.args.get('url_img')
+    print(url_img)
+    resultQuery = query.similarQuery(url_img)
+    return jsonify(
+        {
+            "data": resultQuery
+        }
+    )
+
+
+
 if  __name__ == "__main__":
     app.run(debug=True, port=8080)

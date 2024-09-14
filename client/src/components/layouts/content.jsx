@@ -1,19 +1,31 @@
 import { useState } from "react";
 import logo from "../../assets/spinning-dots.svg";
-import ImageBouns from "../overlay/imageBonus";
-import { Image, Space } from "antd";
-import {
-  ExportOutlined,
-  RotateLeftOutlined,
-  RotateRightOutlined,
-  SwapOutlined,
-  UndoOutlined,
-  ZoomInOutlined,
-  ZoomOutOutlined,
-} from "@ant-design/icons";
+import { BiSlideshow } from "react-icons/bi";
+import { BsCardImage, BsBoxArrowUpRight } from "react-icons/bs";
+
+import ImageNeighBor from "../overlay/imageNeighBour";
+import ImageSimilar from "../overlay/imageSimilar";
 
 const ContentPage = (props) => {
   const { result, loading } = props;
+  const [selectedNeighbour, setSelectedNeighbour] = useState(null);
+  const [selectedSimilar, setSelectedSimilar] = useState(null);
+
+  const handleNeighBourClick = (id_video, id_frame) => {
+    setSelectedNeighbour({ video: id_video, frame: id_frame });
+  };
+
+  const closeNeighBour = () => {
+    setSelectedNeighbour(null);
+  };
+  const handleSimilarClick = (id_video, id_frame) => {
+    setSelectedSimilar({ video: id_video, frame: id_frame });
+  };
+
+  const closeSimilar = () => {
+    setSelectedSimilar(null);
+  };
+
   const OpenURL = (url, time) => {
     window.open(url + "&t=" + Math.floor(+time), "_blank");
   };
@@ -26,7 +38,7 @@ const ContentPage = (props) => {
             <img className="scale-[0.2] ml-40 mb-20" src={logo} alt="" />
           </div>
         ) : (
-          <div className="grid grid-cols-5 gap-4">
+          <div className="grid grid-cols-6 gap-2">
             {result.map((item, index) => {
               const id_video = item.video;
               const id_frame = item.id;
@@ -39,53 +51,60 @@ const ContentPage = (props) => {
                 id_frame.toString().padStart(3, "0") +
                 ".jpg";
               return (
-                <figure>
-                  <Image
-                    width={200}
-                    src={url_img}
-                    key={frame_idx}
-                    preview={{
-                      toolbarRender: (
-                        _,
-                        {
-                          image: { url_img },
-                          transform: { scale },
-                          actions: {
-                            onFlipY,
-                            onFlipX,
-                            onRotateLeft,
-                            onRotateRight,
-                            onZoomOut,
-                            onZoomIn,
-                            onReset,
-                          },
-                        }
-                      ) => (
-                        <Space size={12} className="toolbar-wrapper">
-                          <ExportOutlined
-                            onClick={() => OpenURL(url_video, pts_time)}
-                          />
-                          <SwapOutlined rotate={90} onClick={onFlipY} />
-                          <SwapOutlined onClick={onFlipX} />
-                          <RotateLeftOutlined onClick={onRotateLeft} />
-                          <RotateRightOutlined onClick={onRotateRight} />
-                          <ZoomOutOutlined
-                            disabled={scale === 1}
-                            onClick={onZoomOut}
-                          />
-                          <ZoomInOutlined
-                            disabled={scale === 50}
-                            onClick={onZoomIn}
-                          />
-                          <UndoOutlined onClick={onReset} />
-                        </Space>
-                      ),
-                    }}
-                  />
-                  <figcaption>
-                    {id_video}, {id_frame}
-                  </figcaption>
-                </figure>
+                <>
+                  <div className="group relative w-[200px] h-[112.5px]">
+                    <img
+                      className=" h-full w-full object-cover"
+                      src={url_img}
+                      alt=""
+                    />
+                    <div className="w-full absolute top-0 left-0 items-center justify-between hidden group-hover:flex">
+                      <p className="p-1 border left-0 border-white bg-black opacity-50  text-white text-sm animate-popOut">
+                        {id_video}, {id_frame}
+                      </p>
+                      <button
+                        onClick={() => {
+                          OpenURL(url_video, pts_time);
+                        }}
+                        className="p-2 border border-white bg-black opacity-50 rounded-sm text-white text-sm animate-popOut"
+                      >
+                        <BiSlideshow />
+                      </button>
+                    </div>
+                    <div className="w-full absolute bottom-0  items-center justify-between hidden group-hover:flex">
+                      <button
+                        onClick={() => handleNeighBourClick(id_video, id_frame)}
+                        className="p-2 border left-0 border-white bg-black opacity-50 rounded-sm text-white text-sm animate-popOut"
+                      >
+                        <BsCardImage />
+                      </button>
+                      <button
+                        onClick={() => handleSimilarClick(id_video, id_frame)}
+                        className="p-2 border right-0 border-white bg-black opacity-50 rounded-sm text-white text-sm animate-popOut"
+                      >
+                        <BsBoxArrowUpRight />
+                      </button>
+                    </div>
+                  </div>
+                  {selectedNeighbour &&
+                    selectedNeighbour.video === id_video &&
+                    selectedNeighbour.frame === id_frame && (
+                      <ImageNeighBor
+                        closeNeighBour={closeNeighBour}
+                        video={id_video}
+                        frame={id_frame}
+                      />
+                    )}
+                  {selectedSimilar &&
+                    selectedSimilar.video === id_video &&
+                    selectedSimilar.frame === id_frame && (
+                      <ImageSimilar
+                        closeSimilar={closeSimilar}
+                        video={id_video}
+                        frame={id_frame}
+                      />
+                    )}
+                </>
               );
             })}
           </div>

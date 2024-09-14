@@ -7,6 +7,8 @@ import os
 
 from sentence_transformers import SentenceTransformer, util
 from PIL import Image
+import requests
+from io import BytesIO
 
 #Load CLIP model
 model = SentenceTransformer('clip-ViT-B-32')
@@ -74,6 +76,8 @@ def textQuery(data):
     ans = query_more[0]
     for i in range(1,count):
         ans = join_arr(ans, query_more[i])
+    pd_video = []
+    pd_frame = []
     for el in ans:
         video_frame = el['video']
         id_frame = el['id']
@@ -84,28 +88,20 @@ def textQuery(data):
             'url': url,
             'pts_time': pts_time,
             'frame_idx': frame_idx,
-            'fps': fps}
+            'fps': fps,
+            }
         result.append(data)
-    print(len(result))
+        pd_video.append(video_frame)
+        pd_frame.append(int(frame_idx))
+    
+    pd_data = {
+        'video': pd_video[0:100],
+        'index': pd_frame[0:100]
+    }
+    df = pd.DataFrame(pd_data)
+    df.to_csv('output.csv', index=False)
     return result[0:1000]
 
-    print(result)
-    # text = data[0]['value']
-    # result = []
-    # text_emb = model.encode([text])
-    # search_result = client_qdrant.search(collection_name=collection_name, query_vector=text_emb.tolist()[0], limit=500)
-    # for hit in search_result:
-    #     video_frame, id_frame = decode_id(hit.id)
-    #     url, pts_time, fps, frame_idx = getData(video_frame, id_frame)
-    #     data = {
-    #         'video': video_frame, 
-    #         'id': id_frame,
-    #         'url': url,
-    #         'pts_time': pts_time,
-    #         'frame_idx': frame_idx,
-    #         'fps': fps}
-    #     result.append(data)
-    return result
 
 
 UPLOAD_FOLDER = 'uploads/'
@@ -131,4 +127,18 @@ def imageQuery():
         print("File deleted successfully")
     else:
         print("File does not exist")
+    return result
+
+
+def similarQuery(url_img):
+    result = []
+    img_emb = model.encode(Image.open(url_img))
+    search_result = client_qdrant.search(collection_name=collection_name, query_vector=img_emb.tolist(), limit=200)
+    for hit in search_result:
+        video_frame, id_frame = decode_id(hit.id)
+        data = {
+            'video': video_frame, 
+            'id': id_frame,
+            }
+        result.append(data)
     return result
