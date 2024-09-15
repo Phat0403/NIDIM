@@ -32,6 +32,8 @@ def getData(video, id):
 
 def searchResult_json(search_result):
     result=[]
+    pd_video = []
+    pd_frame = []
     for hit in search_result:
         video_frame, id_frame = decode_id(hit)
         url, pts_time, fps, frame_idx = getData(video_frame, id_frame)
@@ -44,6 +46,14 @@ def searchResult_json(search_result):
             'frame_idx': frame_idx,
             'fps': fps}
         result.append(data)
+        pd_video.append(video_frame)
+        pd_frame.append(int(frame_idx))
+    pd_data = {
+        'video': pd_video[0:100],
+        'index': pd_frame[0:100]
+    }
+    df = pd.DataFrame(pd_data)
+    df.to_csv('output.csv', index=False)
     return result
 
 
