@@ -55,7 +55,7 @@ def rrf_pipeline(embs,qfilter=None):
             collection_name=collection_name,
             query_vector=emb.tolist(),
             query_filter= qfilter,
-            limit=100)
+            limit=1000)
         rrf_input.append([hit.id for hit in search_result])
     return rrf(rrf_input)
 

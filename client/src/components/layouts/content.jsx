@@ -58,10 +58,12 @@ const ContentPage = (props) => {
                       src={url_img}
                       alt=""
                     />
-                    <div className="w-full absolute top-0 left-0 items-center justify-between hidden group-hover:flex">
-                      <p className="p-1 border left-0 border-white bg-black opacity-50  text-white text-sm animate-popOut">
-                        {id_video}, {id_frame}
+                    <div className="w-full absolute top-0 left-0 items-center justify-between flex">
+                      <p className="p-1 border border-white bg-black opacity-50  text-white text-sm animate-popOut ">
+                        {id_video}, {frame_idx}
                       </p>
+                    </div>
+                    <div className=" absolute top-0 right-0  hidden group-hover:flex">
                       <button
                         onClick={() => {
                           OpenURL(url_video, pts_time);

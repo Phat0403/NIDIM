@@ -58,15 +58,20 @@ const ImageSimilar = (props) => {
                 id_frame.toString().padStart(3, "0") +
                 ".jpg";
               return (
-                <div key={index}>
+                <div className='relative' key={index}>
                   <img
                     src={url_img}
                     alt=""
-                    className={`cursor-pointer w-[220px] h-[112.5px] object-cover ${
+                    className={`cursor-pointer w-full h-full object-cover ${
                       index === 0 ? "border-8 border-yellow-500" : ""
                     }`}
                     onClick={() => setSelectedImage(url_img)} // Khi click sẽ set hình ảnh đã chọn
                   />
+                  <div className=" absolute top-0 left-0 items-center justify-between flex">
+                      <p className="p-1 border border-white bg-black opacity-50  text-white text-sm animate-popOut ">
+                        {id_video}, {id_frame}
+                      </p>
+                    </div>
                 </div>
               );
             })}

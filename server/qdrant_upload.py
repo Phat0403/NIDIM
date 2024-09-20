@@ -16,7 +16,7 @@ def create_qdrant(collection_name):
         vectors_config=VectorParams(size=512, distance="Cosine") # Cung cấp cấu hình vector
     )
 # client_qdrant.delete_collection(collection_name=collection_name)
-# create_qdrant(collection_name)
+create_qdrant(collection_name)
 
 
 # clip_featurePath = 'D:/newPython/video_frame/clip-features'
@@ -39,13 +39,13 @@ def decode_id(id):
     l = int(((id - id_frame)/1000-v)/32)
     return [f'L{l:02}_V{v:03}', id_frame]
 
-file_clip_feature=os.listdir('./data/clip-features')
+file_clip_feature=os.listdir('./clip_h14_fixed')
 
 
 def upload_data(n):
     for i in range(n):
         points = []
-        clip_feature = np.load(f'./data/clip-features/' + file_clip_feature[i])
+        clip_feature = np.load(f'./clip_h14_fixed/' + file_clip_feature[i])
         video = convert_name_file(file_clip_feature[i])
         sl_frame = clip_feature.shape[0]
         for j in range(sl_frame):
@@ -55,6 +55,6 @@ def upload_data(n):
             points.append(point)
         client_qdrant.upsert(collection_name=collection_name, points=points)
 
-# upload_data(len(file_clip_feature))
+upload_data(len(file_clip_feature))
 # print(len(file_clip_feature))
 
