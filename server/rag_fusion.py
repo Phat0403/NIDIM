@@ -7,7 +7,7 @@ from qdrant_client import models
 import os
 
 client_qdrant = QdrantClient(host='localhost', port=6333)
-
+collection_name = 'clip-feature-3'
 mapp={} #id->video
 stt=[0,] #xác định xem frame đó ở video thứ mấy rồi sử dụng mapp để lấy ra địa chỉ video
 
@@ -19,6 +19,7 @@ def rrf(results: list[list], k=60):
     Reciprocal_rank_fusion that takes multiple lists of ranked documents 
     and an optional parameter k used in the RRF formula 
     results: I[0] from faiss result    
+    idx[0] is the id of the result
     """
     fused_scores = {}
     for result in results:
@@ -44,10 +45,11 @@ def get_points(points):
         res.append((p['id'],p['payload'],p['vector']))
     return res
 
-collection_name = 'clip-feature-3'
+
 
 def rrf_pipeline(embs,qfilter=None):
     rrf_input=[]
+    mapp={}
     for i in range(embs.shape[0]): ## rag_fusion
         emb=embs[i]
         # print(text_emb.tolist())
@@ -55,9 +57,15 @@ def rrf_pipeline(embs,qfilter=None):
             collection_name=collection_name,
             query_vector=emb.tolist(),
             query_filter= qfilter,
-            limit=100)
+            limit=200)
         rrf_input.append([hit.id for hit in search_result])
-    return rrf(rrf_input)
+        for hit in search_result:
+            if hit.id not in mapp.keys():
+                mapp[hit.id]=hit.score
+            mapp[hit.id]= (mapp[hit.id]+hit.score)/2
+    res=rrf(rrf_input)
+    res=[(a,mapp[a]) for a in res]
+    return  res
 
 
 def image_text_pipeline(img_emb,text_embs):

@@ -10,11 +10,13 @@ client_qdrant = QdrantClient(host='localhost', port=6333)
 
 # Tạo collection
 collection_name = 'clip-feature-3'
+
 def create_qdrant(collection_name):
     client_qdrant.create_collection(
         collection_name=collection_name,
         vectors_config=VectorParams(size=512, distance="Cosine") # Cung cấp cấu hình vector
     )
+
 # client_qdrant.delete_collection(collection_name=collection_name)
 # create_qdrant(collection_name)
 
@@ -42,19 +44,21 @@ def decode_id(id):
 file_clip_feature=os.listdir('./data/clip-features')
 
 
-def upload_data(n):
+def upload_data(n=363):
     for i in range(n):
         points = []
-        clip_feature = np.load(f'./data/clip-features/' + file_clip_feature[i])
+        clip_feature = np.load(f'./data/clip/' + file_clip_feature[i])
         video = convert_name_file(file_clip_feature[i])
         sl_frame = clip_feature.shape[0]
         for j in range(sl_frame):
             idx = encode_id(video, j+1)
+            print(idx)
             vector = clip_feature[int(j)].tolist()
             point = PointStruct(id=int(idx), vector=vector,payload={"adr":idx})
             points.append(point)
         client_qdrant.upsert(collection_name=collection_name, points=points)
 
+# upload_data()
 # upload_data(len(file_clip_feature))
 # print(len(file_clip_feature))
-
+# print(client_qdrant.get_collections(collection_name=collection_name))

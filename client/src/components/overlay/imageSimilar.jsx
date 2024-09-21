@@ -8,7 +8,7 @@ const ImageSimilar = (props) => {
 
   const folder_video = video.substring(0, 3);
   const url_img =
-    `C:/Users/tanph/Downloads/${folder_video}/${video}/` +
+    `D:/code/AI_challenge/rag/keyframe/${folder_video}/${video}/` +
     frame.toString().padStart(3, "0") +
     ".jpg";
 
