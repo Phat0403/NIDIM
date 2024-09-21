@@ -16,6 +16,15 @@ client_qdrant = QdrantClient(host='localhost', port=6333)
 # Tạo collection
 collection_name = 'clip-feature-3'
 
+
+def TUNGDO(THRESHOLD):
+    return THRESHOLD
+
+
+
+
+
+
 def decode_id(id):
     id_frame = id%1000
     v = int(((id - id_frame)/1000)%32)

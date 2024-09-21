@@ -3,7 +3,7 @@ import { CiSearch } from "react-icons/ci";
 import axios from "axios";
 import qs from "qs";
 const TextQuery = (props) => {
-  const { setResult, setLoading } = props;
+  const { setResult, setLoading, rateNum } = props;
   const [queries, setQueries] = useState([{ id: 1, value: "" }]);
 
   const handleAddQuery = () => {
@@ -33,7 +33,7 @@ const TextQuery = (props) => {
     setLoading(true);
     try {
       const response = await axios.get("http://localhost:8080/api/query/text", {
-        params: { queries },
+        params: { queries,rateNum },
         paramsSerializer: (params) => {
           return qs.stringify(params, { arrayFormat: 'repeat' });
         }

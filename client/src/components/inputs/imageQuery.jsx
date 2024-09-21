@@ -4,7 +4,7 @@ import axios from "axios";
 const ImageQuery = (props) => {
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState(null);
-  const { setResult, setLoading } = props;
+  const { setResult, setLoading,rateNum } = props;
 
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
@@ -89,6 +89,7 @@ const ImageQuery = (props) => {
         className="cursor-pointer bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg mb-2 transition-all duration-300 w-full text-center"
       >
         {preview ? "Change Image" : "Upload Image"}
+
       </label>
       <input
         id="upload"
