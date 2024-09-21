@@ -49,8 +49,6 @@ def postImageQuery():
             file_path = os.path.join(UPLOAD_FOLDER, filename)
             file.save(file_path)
 
-            query.TUNGDO(rate_num)
-
             return jsonify({'message': 'File successfully uploaded', 'file_path': file_path}), 200
 
     except Exception as e:
@@ -60,10 +58,9 @@ def postImageQuery():
 @app.route("/api/query/image", methods=['GET'])
 def getImageQuery():
     # data=getText()
-    print(1235)
-    rate_num = request.args.get('rateNum', None)
-    if(rate_num):
-        query.TUNGDO(rate_num)
+    # rate_num = request.args.get('rateNum', None)
+    # if(rate_num):
+    #     query.TUNGDO(rate_num)
 
     resultQuery = query.imageQuery()
     

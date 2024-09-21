@@ -38,7 +38,7 @@ def searchResult_to_json(search_result):
     pd_video = []
     pd_frame = []
     for hit in search_result:
-        video_id, keyframe_id = decode_id(hit)
+        video_id, keyframe_id = decode_id(hit[2])
         url, pts_time, fps, frame_idx = getData(video_id, keyframe_id)
         # print(video_frame,id_frame)
         data = {
@@ -241,10 +241,9 @@ def imageQuery():
     result=[]
     img = [f for f in os.listdir(UPLOAD_FOLDER) if os.path.isfile(os.path.join(UPLOAD_FOLDER, f))][0]
     img_path = os.path.join(UPLOAD_FOLDER, img)
-    img_emb = model.encode(Image.open(img_path))
-    # print(len(img_emb.tolist()))
+    img_emb = model.encode(Image.open(img_path)).reshape(1,-1)
     search_result=rf.rrf_pipeline(img_emb)
-    search_result =[hit.id for hit in search_result]
+    # search_result =[hit for hit in search_result]
     result= searchResult_to_json(search_result)
     if os.path.exists(img_path):
         os.remove(img_path)
