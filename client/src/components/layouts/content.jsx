@@ -48,7 +48,7 @@ const ContentPage = (props) => {
               const frame_idx = item.frame_idx;
               const url_img =
                 `https://storage.cloud.google.com/nidim/keyframe/${folder_video}/${id_video}/` +
-                id_frame.toString().padStart(3, "0") +
+                id_frame.toString().padStart(4, "0") +
                 ".jpg";
               return (
                 <>
@@ -59,9 +59,11 @@ const ContentPage = (props) => {
                       alt=""
                     />
                     <div className="w-full absolute top-0 left-0 items-center justify-between flex">
-                      <p className="p-1 border left-0 border-white bg-black opacity-50  text-white text-sm animate-popOut">
-                        {id_video}, {id_frame}
+                      <p className="p-1 border border-white bg-black opacity-50  text-white text-sm animate-popOut ">
+                        {id_video}, {frame_idx}
                       </p>
+                    </div>
+                    <div className=" absolute top-0 right-0  hidden group-hover:flex">
                       <button
                         onClick={() => {
                           OpenURL(url_video, pts_time);

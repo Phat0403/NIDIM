@@ -4,7 +4,7 @@ import axios from "axios";
 const ImageQuery = (props) => {
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState(null);
-  const { setResult, setLoading } = props;
+  const { setResult, setLoading,rateNum } = props;
 
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
@@ -17,7 +17,22 @@ const ImageQuery = (props) => {
       reader.readAsDataURL(file);
     }
   };
+  const handlePaste = (event) => {
+    const items = event.clipboardData.items;
 
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      if (item.type.indexOf("image") !== -1) {
+        const file = item.getAsFile();
+        setImage(file);
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setPreview(reader.result);
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+  };
   const sleep = (ms) => {
     return new Promise((resolve) => setTimeout(resolve, ms));
   };
@@ -52,7 +67,8 @@ const ImageQuery = (props) => {
   };
 
   return (
-    <div className="w-80 flex flex-col items-center justify-center bg-gray-50 p-4 rounded-lg shadow-lg mt-2 ">
+    <div className="w-80 flex flex-col items-center justify-center bg-gray-50 p-4 rounded-lg shadow-lg mt-2 "
+    onPaste={handlePaste}>
       <div className="mb-2 w-full">
         {preview ? (
           <img
@@ -73,6 +89,7 @@ const ImageQuery = (props) => {
         className="cursor-pointer bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg mb-2 transition-all duration-300 w-full text-center"
       >
         {preview ? "Change Image" : "Upload Image"}
+
       </label>
       <input
         id="upload"

@@ -8,7 +8,7 @@ const ImageNeighBor = (props) => {
   const imageNeighBor = Array.from({ length: 54 }, (_, index) => index - 27).map(
     (num) =>
       `https://storage.cloud.google.com/nidim/keyframe/${folder_video}/${video}/` +
-      (num + frame).toString().padStart(3, "0") +
+      (num + frame).toString().padStart(4, "0") +
       ".jpg"
   );
 

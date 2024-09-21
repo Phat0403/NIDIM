@@ -17,16 +17,6 @@ def create_qdrant(collection_name):
         vectors_config=VectorParams(size=512, distance="Cosine") # Cung cấp cấu hình vector
     )
 
-# client_qdrant.delete_collection(collection_name=collection_name)
-# create_qdrant(collection_name)
-
-
-# clip_featurePath = 'D:/newPython/video_frame/clip-features'
-
-# file_clip_feature = os.listdir(clip_featurePath)
-# n=len(file_clip_feature)
-
-
 def convert_name_file(s):
     s = s[0:8]
     return s
@@ -35,30 +25,47 @@ def encode_id(id_video,id_frame):
     l = int(l[1:])
     v = int(v[1:])
     return (l*32+v)*1000+id_frame
-def decode_id(id):
-    id_frame = id%1000
-    v = int(((id - id_frame)/1000)%32)
-    l = int(((id - id_frame)/1000-v)/32)
-    return [f'L{l:02}_V{v:03}', id_frame]
 
-file_clip_feature=os.listdir('./data/clip-features')
+def decode_id(res):
+    return res['video_id'],res['keyframe_id']
 
 
-def upload_data(n=363):
+
+
+def upload_data(n=None):
+    cnt=0
+    file_clip_feature=os.listdir('./data/clip-features')
+    n=len(file_clip_feature)
+    # print(n)
     for i in range(n):
         points = []
-        clip_feature = np.load(f'./data/clip/' + file_clip_feature[i])
+        clip_feature = np.load(f'./data/clip-features/' + file_clip_feature[i])
         video = convert_name_file(file_clip_feature[i])
         sl_frame = clip_feature.shape[0]
         for j in range(sl_frame):
-            idx = encode_id(video, j+1)
-            print(idx)
+            idx = cnt
+            # print(idx)
+            cnt+=1
             vector = clip_feature[int(j)].tolist()
-            point = PointStruct(id=int(idx), vector=vector,payload={"adr":idx})
+            # print(video,j)
+            point = PointStruct(id=int(idx), vector=vector,payload={
+                "adr":idx,
+                'video_id':video,
+                "keyframe_id":j,
+            })
             points.append(point)
         client_qdrant.upsert(collection_name=collection_name, points=points)
 
-# upload_data()
-# upload_data(len(file_clip_feature))
-# print(len(file_clip_feature))
-# print(client_qdrant.get_collections(collection_name=collection_name))
+
+if __name__=="__main__":
+    from pprint import pprint
+    client_qdrant.delete_collection(collection_name=collection_name)
+    create_qdrant(collection_name) 
+    upload_data()
+    # res= client_qdrant.search(collection_name=collection_name,
+    #                      query_vector=np.random.rand(512).tolist(),
+    #                      limit=2,
+    #                      with_payload=True)
+    # for a in res:
+    #     print(a.payload['video_id'],a.payload['keyframe_id'])
+        

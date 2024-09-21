@@ -14,13 +14,20 @@ if not os.path.exists(UPLOAD_FOLDER):
 
 @app.route("/api/query/text", methods=['GET'])
 def getTextQuery():
+
     queries = request.args.to_dict(flat=False)
     ids = queries.get('queries[id]', [])
     values = queries.get('queries[value]', [])
+    
+    rateNum = request.args.get('rateNum', None)
+
+
     data = []
+    
     for id, value in zip(ids, values):
         data.append({'id': id, 'value': value})
-    resultQuery = query.textQuery1(data)
+    resultQuery = query.textQuery1(data,rateNum)
+    
     return jsonify(
         {
             "data": resultQuery
@@ -32,13 +39,18 @@ def postImageQuery():
     try:
         if 'image' not in request.files:
             return jsonify({'error': 'No file part in the request'}), 400
+        
         file = request.files['image']
         if file.filename == '':
             return jsonify({'error': 'No selected file'}), 400
+        rate_num = request.form.get('rateNum', None)
         if file:
             filename = file.filename
             file_path = os.path.join(UPLOAD_FOLDER, filename)
             file.save(file_path)
+
+            query.TUNGDO(rate_num)
+
             return jsonify({'message': 'File successfully uploaded', 'file_path': file_path}), 200
 
     except Exception as e:
@@ -48,11 +60,12 @@ def postImageQuery():
 @app.route("/api/query/image", methods=['GET'])
 def getImageQuery():
     # data=getText()
-    data=[]
-    if len(data)==0:
-        resultQuery = query.imageQuery()
-    else :
-        resultQuery= query.image_textQuery(data)
+    print(1235)
+    rate_num = request.args.get('rateNum', None)
+    if(rate_num):
+        query.TUNGDO(rate_num)
+
+    resultQuery = query.imageQuery()
     
     return jsonify(
         {

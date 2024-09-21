@@ -8,7 +8,8 @@ from PIL import Image
 from sentence_transformers import SentenceTransformer, util
 #Load CLIP model
 import torch
- 
+# from  
+
 device = "cuda" if torch.cuda.is_available() else "cpu"
 print(device)
 # import open_clip
@@ -19,11 +20,10 @@ client_qdrant = QdrantClient(host='localhost', port=6333)
 # Tạo collection
 collection_name = 'clip-feature-3'
 
-def decode_id(id):
-    id_frame = id%1000
-    v = int(((id - id_frame)/1000)%32)
-    l = int(((id - id_frame)/1000-v)/32)
-    return [f'L{l:02}_V{v:03}', id_frame]
+
+
+def decode_id(payload):
+    return payload['video_id'],payload['keyframe_id']
 
 def getData(video, id):
     with open('./data/media-info-b1/media-info/' + video + '.json', 'r', encoding='utf-8') as file:
@@ -33,8 +33,10 @@ def getData(video, id):
     _, pts_time, fps, frame_idx =df.iloc[int(id)-1]
     return url, pts_time, fps, frame_idx
 
-def searchResult_json(search_result):
+def searchResult_to_json(search_result):
     result=[]
+    pd_video = []
+    pd_frame = []
     for hit in search_result:
         video_id, keyframe_id = decode_id(hit)
         url, pts_time, fps, frame_idx = getData(video_id, keyframe_id)
@@ -47,6 +49,14 @@ def searchResult_json(search_result):
             'frame_idx': frame_idx,
             'fps': fps}
         result.append(data)
+        pd_video.append(video_id)
+        pd_frame.append(int(frame_idx))
+    pd_data = {
+        'video': pd_video[0:100],
+        'index': pd_frame[0:100]
+    }
+    df = pd.DataFrame(pd_data)
+    df.to_csv('output.csv', index=False)
     return result
 
 
@@ -79,10 +89,10 @@ def join_arr(arr1, arr2):
     return result
 
 
-def join_arr1(curr,nexxt,cnt_scene):
+def join_arr1(curr,nexxt,cnt_scene,rateNum):
     for rank,ele in enumerate(nexxt): 
         video_id=ele['video_id']
-        if (ele < 0.5): continue
+        if (cnt_scene>1 and ele < rateNum): continue
         if curr[video_id]['cnt'] == cnt_scene: # có 1 frame giống hơn đã được cập nhật
             #Trường hợp frame_id cái này lớn hơn cái đã cập nhật -> khỏi lấy
             #Trường hợp frame_id cái này nhỏ hơn cái đã cập nhật ? (ưu tiên rank hay độ lớn của frame_id)
@@ -102,7 +112,58 @@ def preprocess_text(text):
     text= [a for a in text if a != " " and a!= ""]
     return text
 
-def textQuery1(data):
+## Code của Phát
+# def textQuery1(data):
+#     query_more = []
+#     result = []
+#     count = 0
+#     for i,_ in enumerate(data):
+#         text = preprocess_text(data[i].get('value'))
+#         result = []
+#         text_embs = model.encode(text)
+#         search_result=rf.rrf_pipeline(text_embs)
+#         query = []
+#         for hit in search_result:
+#             video_frame, id_frame = decode_id(hit)
+#             tmp = {
+#              'video': video_frame, 
+#              'id': id_frame-count
+#             }
+#             query.append(tmp)
+#         query_more.append(query)
+#         count += 1
+#     ans = query_more[0]
+#     for i in range(1,count):
+#         ans = join_arr(ans, query_more[i])
+#     pd_video = []
+#     pd_frame = []
+#     for el in ans:
+#         video_frame = el['video']
+#         id_frame = el['id']
+#         url, pts_time, fps, frame_idx = getData(video_frame, id_frame)
+#         # print(video_frame,id_frame)
+#         data = {
+#             'video': video_frame, 
+#             'id': id_frame,
+#             'url': url,
+#             'pts_time': pts_time,
+#             'frame_idx': frame_idx,
+#             'fps': fps,
+#             }
+#         result.append(data)
+#         pd_video.append(video_frame)
+#         pd_frame.append(int(frame_idx))
+    
+#     pd_data = {
+#         'video': pd_video[0:100],
+#         'index': pd_frame[0:100]
+#     }
+#     df = pd.DataFrame(pd_data)
+#     df.to_csv('output.csv', index=False)
+#     return result[0:1000]
+## hết code của Phát
+
+def textQuery1(data,rateNum):
     '''
     Assumming that it is very unlikely to have the same content of a series of scenes in one video
     '''
@@ -115,10 +176,10 @@ def textQuery1(data):
         result = []
         text_embs = model.encode(text)
         # print(text_embs.shape)
-        search_result=rf.rrf_pipeline(text_embs)
+        search_result=rf.rrf_pipeline(text_embs)# search_result có [0]id vector, [1]score, [2]payload
         query = []
-        for hit in search_result:
-            video_id, keyframe_id = decode_id(hit[0])
+        for hit in search_result: 
+            video_id, keyframe_id = decode_id(hit[2]) #decode cái payload
             tmp = {
                 'video_id':video_id,
                 'keyframe_id': keyframe_id,
@@ -139,7 +200,7 @@ def textQuery1(data):
             'score':0
         }
     for i in range(count):
-        ans = join_arr1(ans, scenes[i],i+1)
+        ans = join_arr1(ans, scenes[i],i+1,rateNum)
     # for name in ans.keys():
     #     print(ans[name]['initial_keyframe'])
     ans= [
@@ -174,32 +235,17 @@ def textQuery1(data):
     return result[0:1000]
 
 
-
-# def textQuery2(data,i=0):
-#     # print(data)
-#     text = preprocess_img_text(data[i]['value'])
-#     result = []
-#     # print(text)
-#     text_embs = model.encode(text)
-#     search_result=rf.rrf_pipeline(text_embs)
-#     result= searchResult_json(search_result)
-#     return result
-
-
 UPLOAD_FOLDER = 'uploads/'
 def imageQuery():
-    # print('imageQuery')
+    print('imageQuery')
     result=[]
     img = [f for f in os.listdir(UPLOAD_FOLDER) if os.path.isfile(os.path.join(UPLOAD_FOLDER, f))][0]
     img_path = os.path.join(UPLOAD_FOLDER, img)
     img_emb = model.encode(Image.open(img_path))
-    print(len(img_emb.tolist()))
-    search_result = client_qdrant.search(
-        collection_name=collection_name,
-        query_vector=img_emb.tolist(), 
-        limit=500)
+    # print(len(img_emb.tolist()))
+    search_result=rf.rrf_pipeline(img_emb)
     search_result =[hit.id for hit in search_result]
-    result= searchResult_json(search_result)
+    result= searchResult_to_json(search_result)
     if os.path.exists(img_path):
         os.remove(img_path)
         print("File deleted successfully")
@@ -211,9 +257,12 @@ def imageQuery():
 def similarQuery(url_img):
     result = []
     img_emb = model.encode(Image.open(url_img))
-    search_result = client_qdrant.search(collection_name=collection_name, query_vector=img_emb.tolist(), limit=200)
+    search_result = client_qdrant.search(collection_name=collection_name,
+                                        query_vector=img_emb.tolist(),
+                                        with_payload=True,
+                                        limit=200)
     for hit in search_result:
-        video_frame, id_frame = decode_id(hit.id)
+        video_frame, id_frame = decode_id(hit.payload)
         data = {
             'video': video_frame, 
             'id': id_frame,
@@ -237,7 +286,7 @@ def image_textQuery(data):
     # search_result = client_qdrant.search(collection_name=collection_name, query_vector=img_emb.tolist(), limit=500)
     
     search_result=rf.image_text_pipeline(img_emb,text_embs)
-    result= searchResult_json(search_result)
+    result= searchResult_to_json(search_result)
     if os.path.exists(img_path):
         os.remove(img_path)
         print("File deleted successfully")

@@ -57,14 +57,16 @@ def rrf_pipeline(embs,qfilter=None):
             collection_name=collection_name,
             query_vector=emb.tolist(),
             query_filter= qfilter,
-            limit=200)
+            with_payload=True,
+            limit=1000)
         rrf_input.append([hit.id for hit in search_result])
-        for hit in search_result:
+        for hit in search_result: ## khúc này để lưu lại score, lấy score trung bình nếu kết quả đó xuất hiện nhiều lần, do query nhiều lần
             if hit.id not in mapp.keys():
-                mapp[hit.id]=hit.score
-            mapp[hit.id]= (mapp[hit.id]+hit.score)/2
+                mapp[hit.id]=[0,0,hit.payload]
+            mapp[hit.id][0]+=hit.score
+            mapp[hit.id][1]+=1
     res=rrf(rrf_input)
-    res=[(a,mapp[a]) for a in res]
+    res=[(a,mapp[a][0]/mapp[a][1],mapp[a][2]) for a in res] #a chỉ đơn giản là id, cái giữa là mean score, cái còn lại là payload
     return  res
 
 
