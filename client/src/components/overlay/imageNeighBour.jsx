@@ -5,12 +5,15 @@ const ImageNeighBor = (props) => {
   const [selectedImage, setSelectedImage] = useState(null); // State để lưu URL của hình ảnh được click
 
   const folder_video = video.substring(0, 3);
-  const imageNeighBor = Array.from({ length: 54 }, (_, index) => index - 27).map(
-    (num) =>
-      `https://storage.cloud.google.com/nidim/keyframe/${folder_video}/${video}/` +
-      (num + frame).toString().padStart(3, "0") +
-      ".jpg"
-  );
+  const imageNeighBor = Array.from({ length: 101 }, (_, i) => i + frame - 50)
+    .filter((num) => num > 0)
+    .map((num, index) => {
+      return (
+        `https://storage.cloud.google.com/nidim/keyframe/${folder_video}/${video}/` +
+        num.toString().padStart(4, "0") +
+        ".jpg"
+      );
+    });
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 animate-popOut">
@@ -30,21 +33,14 @@ const ImageNeighBor = (props) => {
           <div className="mt-10 grid grid-cols-6 gap-1">
             {imageNeighBor.map((url, index) => (
               <div key={index}>
-                {index === 27 ? (
-                  <img
-                    src={url}
-                    alt=""
-                    className="cursor-pointer w-[220px] h-[112.5px] object-cover border-8 border-yellow-500"
-                    onClick={() => setSelectedImage(url)} // Khi click, lưu URL của hình ảnh được chọn
-                  />
-                ) : (
-                  <img
-                    src={url}
-                    alt=""
-                    className="cursor-pointer w-[220px] h-[112.5px] object-cover"
-                    onClick={() => setSelectedImage(url)} // Khi click, lưu URL của hình ảnh được chọn
-                  />
-                )}
+                <img
+                  src={url}
+                  alt={`${video}, ${frame}`}
+                  className={`cursor-pointer w-full h-full object-cover ${
+                    url.includes(frame.toString().padStart(4, "0")) ? "border-8 border-yellow-500" : ""
+                  }`}
+                  onClick={() => setSelectedImage(url)} // Khi click, lưu URL của hình ảnh được chọn
+                />
               </div>
             ))}
           </div>

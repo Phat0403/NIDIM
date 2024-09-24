@@ -48,7 +48,7 @@ const ContentPage = (props) => {
               const frame_idx = item.frame_idx;
               const url_img =
                 `https://storage.cloud.google.com/nidim/keyframe/${folder_video}/${id_video}/` +
-                id_frame.toString().padStart(3, "0") +
+                id_frame.toString().padStart(4, "0") +
                 ".jpg";
               return (
                 <>

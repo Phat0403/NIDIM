@@ -8,8 +8,8 @@ const ImageSimilar = (props) => {
 
   const folder_video = video.substring(0, 3);
   const url_img =
-    `C:/Users/tanph/Downloads/${folder_video}/${video}/` +
-    frame.toString().padStart(3, "0") +
+    `gs://nidim/keyframe/${folder_video}/${video}/` +
+    frame.toString().padStart(4, "0") +
     ".jpg";
 
   useEffect(() => {
@@ -22,14 +22,13 @@ const ImageSimilar = (props) => {
           }
         );
         setSimilar(response.data.data);
-        console.log(response.data.data);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
     };
 
     fetchData();
-  }, [url_img]);
+  }, []);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 animate-popOut">
@@ -55,7 +54,7 @@ const ImageSimilar = (props) => {
               const id_frame = item.id;
               const url_img =
                 `https://storage.cloud.google.com/nidim/keyframe/${folder_video}/${id_video}/` +
-                id_frame.toString().padStart(3, "0") +
+                id_frame.toString().padStart(4, "0") +
                 ".jpg";
               return (
                 <div className='relative' key={index}>
