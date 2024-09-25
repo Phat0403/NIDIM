@@ -2,7 +2,7 @@ from elasticsearch import Elasticsearch
 import json
 
 username = 'elastic'
-password = 'uH2*KwJ9HqdAq7-SRaR6'
+password = '' # Dien password vao day
 
 es_client = Elasticsearch(
     "https://localhost:9200",

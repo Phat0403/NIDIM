@@ -4,7 +4,7 @@ from elasticsearch import Elasticsearch, helpers
 from concurrent.futures import ThreadPoolExecutor
 
 username = 'elastic'
-password = 'uH2*KwJ9HqdAq7-SRaR6'
+password = '' # Dien password vao day
 
 es = Elasticsearch(
     "https://localhost:9200",

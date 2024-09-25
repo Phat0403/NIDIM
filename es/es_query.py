@@ -3,7 +3,7 @@ import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 username = 'elastic'
-password = 'uH2*KwJ9HqdAq7-SRaR6'
+password = '' # Dien password vao day
 
 es = Elasticsearch(
     "https://localhost:9200",
