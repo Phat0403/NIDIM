@@ -32,7 +32,7 @@ const TextQuery = (props) => {
   const getData = async () => {
     setLoading(true);
     try {
-      const response = await axios.get("http://localhost:8080/api/query/text", {
+      const response = await axios.get("http://34.124.251.210:5000/api/query/text", {
         params: { queries },
         paramsSerializer: (params) => {
           return qs.stringify(params, { arrayFormat: 'repeat' });
