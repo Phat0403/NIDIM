@@ -1,0 +1,8 @@
+{
+    "custom_analyzer": {
+      "type": "custom",
+      "tokenizer": "standard",
+      "filter": ["lowercase", "vietnamese_normalizer", "remove_punctuation"]
+    }
+  }
+  

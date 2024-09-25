@@ -1,0 +1,15 @@
+{
+    "vietnamese_normalizer": {
+      "type": "asciifolding",
+      "preserve_original": true
+    },
+    "lowercase": {
+      "type": "lowercase"
+    },
+    "remove_punctuation":{
+        "type": "pattern_replace",
+        "pattern": "[.,:]",
+        "replacement": " "
+    }
+  }
+  
