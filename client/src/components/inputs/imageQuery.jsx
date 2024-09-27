@@ -42,13 +42,13 @@ const ImageQuery = (props) => {
     try {
       const formData = new FormData();
       formData.append("image", image);
-      await axios.post("http://localhost:8080/api/query/image", formData, {
+      await axios.post("http://104.214.176.14:3000/api/query/image", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
 
-      const response = await axios.get("http://localhost:8080/api/query/image", {
+      const response = await axios.get("http://104.214.176.14:3000/api/query/image", {
         params: {
           type: "text",
           status: "active",

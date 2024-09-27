@@ -39,60 +39,10 @@ def textQuery(data):
     text = text['value']
     text_emb = model.encode(text)
     result = db.find_vector(text_emb)
-    
-    # query_more = []
-    # result = []
-    # count = 0
-    # for i,_ in enumerate(data):
-    #     text = preprocess_text(data[i].get('value'))
-    #     result = []
-    #     text_embs = model.encode(text)
-    #     search_result=rf.rrf_pipeline(text_embs)
-    #     query = []
-    #     for hit in search_result:
-    #         video_frame, id_frame = decode_id(hit)
-    #         tmp = {
-    #          'video': video_frame, 
-    #          'id': id_frame-count
-    #         }
-    #         query.append(tmp)
-    #     query_more.append(query)
-    #     count += 1
-    # ans = query_more[0]
-    # for i in range(1,count):
-    #     ans = join_arr(ans, query_more[i])
-    # pd_video = []
-    # pd_frame = []
-    # for el in ans:
-    #     video_frame = el['video']
-    #     id_frame = el['id']
-    #     url, pts_time, fps, frame_idx = getData(video_frame, id_frame)
-    #     # print(video_frame,id_frame)
-    #     data = {
-    #         'video': video_frame, 
-    #         'id': id_frame,
-    #         'url': url,
-    #         'pts_time': pts_time,
-    #         'frame_idx': frame_idx,
-    #         'fps': fps,
-    #         }
-    #     result.append(data)
-    #     pd_video.append(video_frame)
-    #     pd_frame.append(int(frame_idx))
-    
-    # pd_data = {
-    #     'video': pd_video[0:100],
-    #     'index': pd_frame[0:100]
-    # }
-    # df = pd.DataFrame(pd_data)
-    # df.to_csv('output.csv', index=False)
     return result
-
-
 
 UPLOAD_FOLDER = 'uploads/'
 def imageQuery():
-    # print('imageQuery')
     result=[]
     img = [f for f in os.listdir(UPLOAD_FOLDER) if os.path.isfile(os.path.join(UPLOAD_FOLDER, f))][0]
     img_path = os.path.join(UPLOAD_FOLDER, img)
@@ -131,3 +81,8 @@ def similarQuery(url_img):
     return result
 
 
+def ocrQuery(ocr):
+    text = ocr[0]
+    text = text['value']
+    result = db.findOcr(text)
+    return result

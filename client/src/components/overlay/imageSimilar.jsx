@@ -16,7 +16,7 @@ const ImageSimilar = (props) => {
     const fetchData = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:8080/api/query/similar",
+          "http://104.214.176.14:3000/api/query/similar",
           {
             params: { url_img },
           }
@@ -35,7 +35,7 @@ const ImageSimilar = (props) => {
       <div className="rounded-md fixed flex flex-row bg-white w-[1280px] h-[600px] ">
         <header className="fixed w-[1280px] h-10 bg-[#6a6f90]">
           <div className="container mx-auto  flex items-center justify-center">
-            <h1 className="text-3xl font-bold text-[#EDE8F5]">NEIGHBOUR</h1>
+            <h1 className="text-3xl font-bold text-[#EDE8F5]">SIMILAR</h1>
           </div>
           <button
             onClick={() => {

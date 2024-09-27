@@ -2,7 +2,7 @@ import { useState } from "react";
 import { CiSearch } from "react-icons/ci";
 import axios from "axios";
 import qs from "qs";
-const TextQuery = (props) => {
+const OcrQuery = (props) => {
   const { setResult, setLoading } = props;
   const [queries, setQueries] = useState([{ id: 1, value: "" }]);
 
@@ -32,7 +32,7 @@ const TextQuery = (props) => {
     setLoading(true);
     try {
       const response = await axios.get(
-        "http://104.214.176.14:3000/api/query/text",
+        "http://104.214.176.14:3000/api/query/ocr",
         {
           //34.124.251.210:5000
           params: { queries },
@@ -64,7 +64,7 @@ const TextQuery = (props) => {
           id={`message-${query.id}`}
           rows="4"
           className="w-full block p-2.5 text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 mt-2"
-          placeholder={`Write your thoughts here... (${query.id})`}
+          placeholder={`Ocr query... (${query.id})`}
         ></textarea>
       ))}
       <button
@@ -88,4 +88,4 @@ const TextQuery = (props) => {
     </div>
   );
 };
-export default TextQuery;
+export default OcrQuery;
