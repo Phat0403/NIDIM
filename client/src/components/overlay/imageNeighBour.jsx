@@ -4,6 +4,7 @@ const ImageNeighBor = (props) => {
   const { closeNeighBour, video, frame } = props;
   const [selectedImage, setSelectedImage] = useState(null); // State để lưu URL của hình ảnh được click
   const imageRefs = useRef([]); // Ref để lưu danh sách các hình ảnh
+ const [imageNames, setImageNames] = useState([]); // State để lưu mảng tên ảnh
 
   const folder_video = video.substring(0, 3);
   const imageNeighBor = Array.from({ length: 201 }, (_, i) => i + frame - 100)
@@ -15,8 +16,18 @@ const ImageNeighBor = (props) => {
         ".jpg"
       );
     });
-
-  // Sử dụng useEffect để cuộn tới ảnh khớp với frame khi component render
+ useEffect(() => {
+    const fetchImageNames = async () => {
+      try {
+        const response = await fetch(`http://localhost:8080/api/get-image-names?video=${video}&frame=${frame}`);
+        const data = await response.json(); 
+        setImageNames(data); 
+      } catch (error) {
+        console.error("Error fetching image names:", error);
+      }
+    };
+    fetchImageNames();
+  }, [video]);
   useEffect(() => {
     const frameString = frame.toString().padStart(4, "0");
     const indexToScroll = imageNeighBor.findIndex((url) => url.includes(frameString));
@@ -33,9 +44,10 @@ const ImageNeighBor = (props) => {
   }, [frame, imageNeighBor]);
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 animate-popOut">
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 animate-popOut">
       <div className="rounded-md fixed flex flex-row bg-white w-[1280px] h-[600px] ">
-        <header className="fixed w-[1280px] h-10 bg-[#6a6f90]">
+    
+          <header className="fixed w-[1280px] h-10 bg-[#6a6f90] z-10">
           <div className="container mx-auto flex items-center justify-center">
             <h1 className="text-3xl font-bold text-[#EDE8F5]">NEIGHBOUR</h1>
           </div>
@@ -51,16 +63,22 @@ const ImageNeighBor = (props) => {
             {imageNeighBor.map((url, index) => (
               <div
                 key={index}
+                className="relative"
                 ref={(el) => (imageRefs.current[index] = el)} // Gán ref cho từng ảnh
               >
                 <img
                   src={url}
                   alt={`${video}, ${frame}`}
-                  className={`cursor-pointer w-full h-full object-cover ${
+                  className={`cursor-pointer w-[220px] h-[112.5px] object-cover ${
                     url.includes(frame.toString().padStart(4, "0")) ? "border-8 border-yellow-500" : ""
                   }`}
                   onClick={() => setSelectedImage(url)} // Khi click, lưu URL của hình ảnh được chọn
                 />
+                <div className="w-full absolute top-0 left-0 flex items-center justify-between">
+                  <p className="p-1 border border-white bg-black opacity-50 text-white text-sm">
+                    {video + " " + (imageNames[index] || "")} {/* Hiển thị tên ảnh tương ứng */}
+                  </p>
+                </div> 
               </div>
             ))}
           </div>

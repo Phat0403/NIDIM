@@ -8,7 +8,7 @@ import json
 import os
 
 client_qdrant = QdrantClient(host='localhost', port=6333)
-collection_name = 'clip-feature-4'
+collection_name = 'clip-feature-3'
 mapp={} #id->video
 stt=[0,] #xác định xem frame đó ở video thứ mấy rồi sử dụng mapp để lấy ra địa chỉ video
 

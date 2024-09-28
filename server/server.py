@@ -11,18 +11,6 @@ UPLOAD_FOLDER = 'uploads/'
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
-@app.route('/api/get-image-names', methods=['GET'])
-def get_image_names():
-    video = request.args.get('video')  
-    frame = int(request.args.get('frame'))
-    if not video:
-        return jsonify({"error": "Missing video parameter"}), 400
-    image_data = []  
-    for i in range(-27, 54+1-27):
-        frame_idx = query.getData(video, frame+i)[3]
-        image_data.append(frame_idx)
-    return jsonify(image_data)
-
 @app.route("/api/query/ocr", methods=['GET'])
 def getOcrQuery():
     queries = request.args.to_dict(flat=False)
@@ -37,7 +25,19 @@ def getOcrQuery():
             "data": resultQuery
         }
     )
-
+@app.route('/api/get-image-names', methods=['GET'])
+def get_image_names():
+    video = request.args.get('video')  
+    frame = int(request.args.get('frame'))
+    if not video:
+        return jsonify({"error": "Missing video parameter"}), 400
+    image_data = []  
+    for i in range(-100, 201+1-100):
+        if(i+frame<0):
+            continue
+        frame_idx = query.getData(video, frame+i)[3]
+        image_data.append(frame_idx)
+    return jsonify(image_data)
 
 @app.route("/api/query/text", methods=['GET'])
 def getTextQuery():
