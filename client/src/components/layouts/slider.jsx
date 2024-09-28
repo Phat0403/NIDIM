@@ -1,7 +1,8 @@
 import ImageQuery from "../inputs/imageQuery"
 import RateNum from "../inputs/RateNum"
 import TextQuery from "../inputs/textQuery"
-import React, { useState } from 'react';
+import OcrQuery from "../inputs/ocrQuery"
+import { useState } from "react"
 
 const SliderPage = (props)=>{
     const { setResult, setLoading} = props
@@ -12,6 +13,7 @@ const SliderPage = (props)=>{
             <TextQuery  setResult={setResult}  setLoading={setLoading} rateNum={rateNum}/>
             <ImageQuery  setResult={setResult}  setLoading={setLoading} rateNum={rateNum}/>
             <ImageQuery  setResult={setResult}  setLoading={setLoading} rateNum={rateNum}/>
+            <OcrQuery  setResult={setResult}  setLoading={setLoading} />
         </div>
     )
 }

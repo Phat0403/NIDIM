@@ -1,16 +1,36 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 
 const ImageNeighBor = (props) => {
   const { closeNeighBour, video, frame } = props;
   const [selectedImage, setSelectedImage] = useState(null); // State để lưu URL của hình ảnh được click
+  const imageRefs = useRef([]); // Ref để lưu danh sách các hình ảnh
 
   const folder_video = video.substring(0, 3);
-  const imageNeighBor = Array.from({ length: 54 }, (_, index) => index - 27).map(
-    (num) =>
-      `https://storage.cloud.google.com/nidim/keyframe/${folder_video}/${video}/` +
-      (num + frame).toString().padStart(4, "0") +
-      ".jpg"
-  );
+  const imageNeighBor = Array.from({ length: 201 }, (_, i) => i + frame - 100)
+    .filter((num) => num > 0)
+    .map((num, index) => {
+      return (
+        `https://storage.cloud.google.com/nidim/keyframe/${folder_video}/${video}/` +
+        num.toString().padStart(4, "0") +
+        ".jpg"
+      );
+    });
+
+  // Sử dụng useEffect để cuộn tới ảnh khớp với frame khi component render
+  useEffect(() => {
+    const frameString = frame.toString().padStart(4, "0");
+    const indexToScroll = imageNeighBor.findIndex((url) => url.includes(frameString));
+
+    if (indexToScroll !== -1 && imageRefs.current[indexToScroll]) {
+      const timeoutId = setTimeout(() => {
+        imageRefs.current[indexToScroll].scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      }, 3000); // Cuộn sau 3 giây
+      return () => clearTimeout(timeoutId);
+    }
+  }, [frame, imageNeighBor]);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 animate-popOut">
@@ -29,22 +49,18 @@ const ImageNeighBor = (props) => {
         <div className="flex overflow-y-auto justify-center">
           <div className="mt-10 grid grid-cols-6 gap-1">
             {imageNeighBor.map((url, index) => (
-              <div key={index}>
-                {index === 27 ? (
-                  <img
-                    src={url}
-                    alt=""
-                    className="cursor-pointer w-[220px] h-[112.5px] object-cover border-8 border-yellow-500"
-                    onClick={() => setSelectedImage(url)} // Khi click, lưu URL của hình ảnh được chọn
-                  />
-                ) : (
-                  <img
-                    src={url}
-                    alt=""
-                    className="cursor-pointer w-[220px] h-[112.5px] object-cover"
-                    onClick={() => setSelectedImage(url)} // Khi click, lưu URL của hình ảnh được chọn
-                  />
-                )}
+              <div
+                key={index}
+                ref={(el) => (imageRefs.current[index] = el)} // Gán ref cho từng ảnh
+              >
+                <img
+                  src={url}
+                  alt={`${video}, ${frame}`}
+                  className={`cursor-pointer w-full h-full object-cover ${
+                    url.includes(frame.toString().padStart(4, "0")) ? "border-8 border-yellow-500" : ""
+                  }`}
+                  onClick={() => setSelectedImage(url)} // Khi click, lưu URL của hình ảnh được chọn
+                />
               </div>
             ))}
           </div>

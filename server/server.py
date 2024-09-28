@@ -11,6 +11,33 @@ UPLOAD_FOLDER = 'uploads/'
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
+@app.route('/api/get-image-names', methods=['GET'])
+def get_image_names():
+    video = request.args.get('video')  
+    frame = int(request.args.get('frame'))
+    if not video:
+        return jsonify({"error": "Missing video parameter"}), 400
+    image_data = []  
+    for i in range(-27, 54+1-27):
+        frame_idx = query.getData(video, frame+i)[3]
+        image_data.append(frame_idx)
+    return jsonify(image_data)
+
+@app.route("/api/query/ocr", methods=['GET'])
+def getOcrQuery():
+    queries = request.args.to_dict(flat=False)
+    ids = queries.get('queries[id]', [])
+    values = queries.get('queries[value]', [])
+    data = []
+    for id, value in zip(ids, values):
+        data.append({'id': id, 'value': value})
+    resultQuery = query.ocrQuery(data)
+    return jsonify(
+        {
+            "data": resultQuery
+        }
+    )
+
 
 @app.route("/api/query/text", methods=['GET'])
 def getTextQuery():
@@ -20,14 +47,14 @@ def getTextQuery():
     values = queries.get('queries[value]', [])
     
     rateNum = request.args.get('rateNum', None)
-
+    # print(rateNum)
 
     data = []
     
     for id, value in zip(ids, values):
         data.append({'id': id, 'value': value})
     resultQuery = query.textQuery1(data,rateNum)
-    
+    # resultQuery = query.find_vector(data)
     return jsonify(
         {
             "data": resultQuery
@@ -85,4 +112,4 @@ def getSimilarQuery():
 
 
 if  __name__ == "__main__":
-    app.run(debug=True, port=8080)
+    app.run(debug=True, port=8080,use_reloader=False)

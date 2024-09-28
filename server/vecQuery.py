@@ -3,16 +3,15 @@ import pandas as pd
 import os 
 from qdrant_client import QdrantClient
 from qdrant_client import models
+import json
 
 import os
 
 client_qdrant = QdrantClient(host='localhost', port=6333)
-collection_name = 'clip-feature-3'
+collection_name = 'clip-feature-4'
 mapp={} #id->video
 stt=[0,] #xác định xem frame đó ở video thứ mấy rồi sử dụng mapp để lấy ra địa chỉ video
 
-# def normalize(embeds):
-#     return embeds/ np.linalg.norm(embeds,axis=1,keepdims=True)
 
 def rrf(results: list[list], k=60):
     """ 
@@ -22,34 +21,22 @@ def rrf(results: list[list], k=60):
     idx[0] is the id of the result
     """
     fused_scores = {}
-    for result in results:
+    for result in results: # res1,res2,res...
         for rank,idx in enumerate(result):
             if idx not in fused_scores.keys():
                 fused_scores[idx] = 0
             fused_scores[idx] += 1/(rank + k)
     reranked_results = [
-        doc
-        for doc, _ in sorted(fused_scores.items(), key=lambda x: x[1], reverse=True)
+        (doc,score)
+        for doc, score in sorted(fused_scores.items(), key=lambda x: x[1], reverse=True) # sort theo score
     ]
-    return reranked_results
+    return reranked_results # (id,score)
 
 
-
-
-def get_points(points):
-    '''
-        input: json from qdrant.search
-    '''
-    res=[]
-    for p in points['result']:
-        res.append((p['id'],p['payload'],p['vector']))
-    return res
-
-
-
-def rrf_pipeline(embs,qfilter=None):
+def vector_pipeline(embs,qfilter=None):
     rrf_input=[]
     mapp={}
+    search_result=None
     for i in range(embs.shape[0]): ## rag_fusion
         emb=embs[i]
         # print(text_emb.tolist())
@@ -58,17 +45,16 @@ def rrf_pipeline(embs,qfilter=None):
             query_vector=emb.tolist(),
             query_filter= qfilter,
             with_payload=True,
-            limit=1000)
+            limit=500)
         rrf_input.append([hit.id for hit in search_result])
         for hit in search_result: ## khúc này để lưu lại score, lấy score trung bình nếu kết quả đó xuất hiện nhiều lần, do query nhiều lần
+            tmp=hit.payload if len(hit.payload.keys()) else hit.id
             if hit.id not in mapp.keys():
-                mapp[hit.id]=[0,0,hit.payload]
-            mapp[hit.id][0]+=hit.score
-            mapp[hit.id][1]+=1
+                mapp[hit.id]=[0,tmp]
     res=rrf(rrf_input)
-    res=[(a,mapp[a][0]/mapp[a][1],mapp[a][2]) for a in res] #a chỉ đơn giản là id, cái giữa là mean score, cái còn lại là payload
-    return  res
-
+    tmp=[(a[0],a[1],mapp[a[0]][1]) for a in res] #a chỉ đơn giản là id, cái giữa là mean score, cái còn lại là payload
+    res = tmp
+    return res
 
 def image_text_pipeline(img_emb,text_embs):
     '''
@@ -92,7 +78,7 @@ def image_text_pipeline(img_emb,text_embs):
             ),
         ]
     )
-    res= rrf_pipeline(text_embs,qfilter)
+    res= vector_pipeline(text_embs,qfilter)
     return res
 
 

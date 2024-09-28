@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 from qdrant_client import QdrantClient
 from qdrant_client.models import PointStruct, VectorParams
+from qdrant_client import models
 
 import os
 
@@ -51,21 +52,23 @@ def upload_data(n=None):
             point = PointStruct(id=int(idx), vector=vector,payload={
                 "adr":idx,
                 'video_id':video,
-                "keyframe_id":j,
+                "keyframe_id":j+1,
             })
             points.append(point)
         client_qdrant.upsert(collection_name=collection_name, points=points)
 
 
 if __name__=="__main__":
-    from pprint import pprint
-    client_qdrant.delete_collection(collection_name=collection_name)
-    create_qdrant(collection_name) 
-    upload_data()
-    # res= client_qdrant.search(collection_name=collection_name,
-    #                      query_vector=np.random.rand(512).tolist(),
-    #                      limit=2,
-    #                      with_payload=True)
-    # for a in res:
-    #     print(a.payload['video_id'],a.payload['keyframe_id'])
-        
+    print(client_qdrant.get_collection(collection_name=collection_name))
+    # client_qdrant.update_collection(
+    # collection_name=collection_name,
+    #     hnsw_config=models.HnswConfigDiff(
+    #         m=36,
+    #         ef_construct=250, 
+    #     )
+    # )
+    # while True:
+    #     collection_info = client_qdrant.get_collection(collection_name=collection_name)
+    #     if collection_info.status == models.CollectionStatus.GREEN:
+    #         # Collection status is green, which means the indexing is finished
+    #         break
