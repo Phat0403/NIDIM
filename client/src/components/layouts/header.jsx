@@ -1,10 +1,26 @@
-const HeaderPage = () => {
+
+import { useState, useEffect } from "react";
+
+const HeaderPage = (props) => {
+  const {result} = props
+  const data = (result.length > 0 ? result.slice(0, 100).map((item)=>[item.video, item.frame_idx].join(',')) : []).join('\n')
+  const onClickBtn = ()=>{
+    console.log(data)
+    const blob = new Blob([data], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.setAttribute('href', url);
+    a.setAttribute('download', 'out.csv'); // Tên file tải về
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
   return (
-    <header className="w-full h-10 bg-[#6a6f90]">
-      <div className="container mx-auto flex items-center justify-center">
-      <h1 className="text-3xl font-bold text-[#EDE8F5]">NIDIM</h1>
-      </div>
-    </header>
+    <header className="w-full h-10 bg-[#6a6f90] flex items-center justify-end">
+  <button onClick={onClickBtn} className="border mr-4 py-1 bg-red-600 hover:bg-red-500 rounded-md px-2 text-white">Export</button>
+</header>
+
   );
 };
 export default HeaderPage;

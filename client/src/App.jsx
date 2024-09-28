@@ -8,7 +8,7 @@ function App() {
   const [loading, setLoading] = useState(false)
   return (
     <div >
-      <HeaderPage />
+      <HeaderPage result={result} />
       <div className="fixed flex flex-row bg-[#f0d8e8] h-screen w-full">
         <SliderPage  setResult={setResult} setLoading={setLoading}/>
         <ContentPage result={result} loading={loading}/>

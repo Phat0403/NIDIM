@@ -3,12 +3,8 @@ import database as db
 from sentence_transformers import SentenceTransformer, util
 from PIL import Image
 
-
 #Load CLIP model
 model = SentenceTransformer('clip-ViT-B-32')
-
-
-
 def find_index(arr, value):
     try:
         return arr.index(value) 
