@@ -41,7 +41,7 @@ const ContentPage = (props) => {
           <div className="grid grid-cols-6 gap-2">
             {result.map((item, index) => {
               const id_video = item.video;
-              const id_frame = item.id;
+              const id_frame = Math.floor(item.id);
               const folder_video = id_video.substring(0, 3);
               const url_video = item.url;
               const pts_time = item.pts_time;
