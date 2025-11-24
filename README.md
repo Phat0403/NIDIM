@@ -92,7 +92,7 @@ npm run dev
 
 ### 🔹 Demo Video
 
-[![Demo Video](./docs/video_thumbnail.png)](./docs/video.mp4)
+[![Demo Video](./docs/video_thumbnail.png)](./docs/demo_ytb.mp4)
 
 ------------------------------------------------------------------------
 
